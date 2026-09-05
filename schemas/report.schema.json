@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SecurityDiag level report",
+  "type": "object",
+  "required": [
+    "schema",
+    "standard",
+    "run_id",
+    "level_id",
+    "level_name",
+    "verdict",
+    "findings"
+  ],
+  "properties": {
+    "schema": {
+      "const": "securitydiag.report.v1"
+    },
+    "standard": {
+      "const": "SecurityDiag"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "level_id": {
+      "pattern": "^S[0-9]{2}$"
+    },
+    "level_name": {
+      "type": "string"
+    },
+    "verdict": {
+      "enum": [
+        "PASS",
+        "WARN",
+        "FAIL",
+        "SKIP",
+        "BLOCKED",
+        "PARTIAL",
+        "ERROR",
+        "INFRA_ERROR",
+        "CONFIG_ERROR"
+      ]
+    },
+    "findings": {
+      "type": "array"
+    },
+    "artifacts": {
+      "type": "array"
+    },
+    "metrics": {
+      "type": "object"
+    }
+  }
+}

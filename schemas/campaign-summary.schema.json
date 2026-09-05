@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SecurityDiag campaign summary",
+  "type": "object",
+  "required": [
+    "schema",
+    "standard",
+    "run_id",
+    "selection",
+    "verdict",
+    "levels"
+  ],
+  "properties": {
+    "schema": {
+      "const": "securitydiag.campaign-summary.v1"
+    },
+    "standard": {
+      "const": "SecurityDiag"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "selection": {
+      "type": "string"
+    },
+    "verdict": {
+      "enum": [
+        "PASS",
+        "WARN",
+        "FAIL",
+        "SKIP",
+        "BLOCKED",
+        "PARTIAL",
+        "ERROR",
+        "INFRA_ERROR",
+        "CONFIG_ERROR"
+      ]
+    },
+    "levels": {
+      "type": "array"
+    }
+  }
+}

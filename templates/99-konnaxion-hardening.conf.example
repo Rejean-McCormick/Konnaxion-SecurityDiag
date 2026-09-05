@@ -1,0 +1,11 @@
+# Review before installing. This file is NOT applied by SecurityDiag.
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+AllowUsers deploy
+X11Forwarding no
+AllowTcpForwarding no
+ClientAliveInterval 300
+ClientAliveCountMax 2
+MaxAuthTries 3

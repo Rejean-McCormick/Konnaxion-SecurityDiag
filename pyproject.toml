@@ -1,0 +1,9 @@
+[project]
+name = "konnaxion-securitydiag"
+version = "1.0.0"
+description = "Read-only security qualification framework for Konnaxion deployments"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.securitydiag]
+mode = "copy-in-security-frame"

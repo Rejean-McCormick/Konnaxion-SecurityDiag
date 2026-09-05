@@ -1,0 +1,7 @@
+Add these lines to the target repository .gitignore:
+
+.securitydiag/
+securitydiag/securitydiag.config.local.json
+securitydiag/attestations/*.local.json
+
+The SecurityDiag source directory itself should be committed; generated evidence and machine-local configuration should not.

@@ -1,0 +1,61 @@
+{
+  "schema": "securitydiag.config.v1.1",
+  "phase": "production",
+  "execution": {
+    "allow_network": true,
+    "allow_declared_audits": false
+  },
+  "remote": {
+    "enabled": true,
+    "host": "NEW_SERVER_IP_OR_DNS",
+    "user": "ops",
+    "port": 22,
+    "identity_file": "C:/Users/YOU/.ssh/konnaxion-new-vps-2026",
+    "sudo_mode": "noninteractive",
+    "secret_paths": [
+      "/opt/konnaxion/shared/.envs/.production/.django",
+      "/opt/konnaxion/shared/.envs/.production/.postgres",
+      "/opt/konnaxion/shared/frontend/.env.production"
+    ],
+    "backup_paths": [
+      "/opt/konnaxion/shared/backups"
+    ],
+    "allowed_sudo_users": [
+      "ops"
+    ],
+    "allowed_ssh_key_fingerprints": [
+      "SHA256:REPLACE_WITH_OPS_AUTHORIZED_KEY_FINGERPRINT"
+    ],
+    "docker": {
+      "strict_container_allowlist": true
+    }
+  },
+  "external": {
+    "enabled": true,
+    "host": "konnaxion.com"
+  },
+  "release": {
+    "attestations": {
+      "fresh_vps": true,
+      "old_disk_not_cloned": true,
+      "all_compromised_secrets_rotated": true,
+      "clean_git_source_only": true,
+      "cloud_firewall_verified": true,
+      "old_vps_retired_or_isolated": true
+    }
+  },
+  "capsule_manager": {
+    "enabled": true,
+    "repo_root": "auto",
+    "instance_id": "konnaxion-production",
+    "agent_port": 8765,
+    "require_for_release": true,
+    "unknown_is_blocking": true,
+    "require_local_agent_bind": true,
+    "security_gate_remote_path_template": "/opt/konnaxion/instances/{instance_id}/state/security-gate.json",
+    "agent_token_path": "/opt/konnaxion/manager/agent.token",
+    "audit_path": "/opt/konnaxion/agent/audit/agent-audit.jsonl",
+    "agent_service_name": "kx-agent",
+    "expected_agent_user": "kx-agent"
+  }
+}

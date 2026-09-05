@@ -1,0 +1,248 @@
+{
+  "schema": "securitydiag.config.v1.1",
+  "target_repo_root": "auto",
+  "control_dir": ".securitydiag",
+  "phase": "predeploy",
+  "execution": {
+    "default_timeout_seconds": 180,
+    "fail_fast": false,
+    "protect_tracked_files": true,
+    "allow_network": false,
+    "allow_declared_audits": false
+  },
+  "scan": {
+    "exclude_dirs": [
+      ".git",
+      ".securitydiag",
+      "securitydiag",
+      "node_modules",
+      ".next",
+      "dist",
+      "build",
+      ".venv",
+      "venv",
+      "__pycache__",
+      ".pytest_cache",
+      ".mypy_cache",
+      "coverage",
+      ".kx_deploy_backups"
+    ],
+    "max_files": 25000,
+    "max_file_bytes": 1048576
+  },
+  "repo_security": {
+    "scan_untracked": true,
+    "archive_extensions": [
+      ".zip",
+      ".tar",
+      ".tgz",
+      ".tar.gz",
+      ".7z"
+    ],
+    "sensitive_names": [
+      ".env",
+      "id_rsa",
+      "id_dsa",
+      "id_ecdsa",
+      "id_ed25519"
+    ],
+    "placeholder_tokens": [
+      "changeme",
+      "change-me",
+      "change_me",
+      "example",
+      "replace-me",
+      "replace_this",
+      "your-",
+      "your_",
+      "dummy",
+      "development-only",
+      "dev-only",
+      "postgres:postgres@",
+      "<secret>",
+      "<password>"
+    ]
+  },
+  "supply_chain": {
+    "declared_audits": [
+      {
+        "id": "frontend-pnpm-audit",
+        "enabled": false,
+        "command": [
+          "pnpm",
+          "audit",
+          "--prod",
+          "--json"
+        ],
+        "cwd": "frontend",
+        "timeout_seconds": 300,
+        "network": true
+      },
+      {
+        "id": "backend-pip-audit",
+        "enabled": false,
+        "command": [
+          "pip-audit",
+          "--format=json"
+        ],
+        "cwd": "backend",
+        "timeout_seconds": 300,
+        "network": true
+      }
+    ]
+  },
+  "application": {
+    "django_production_settings": "backend/config/settings/production.py",
+    "django_base_settings": "backend/config/settings/base.py",
+    "production_compose": "backend/docker-compose.production.yml",
+    "frontend_next_config": "frontend/next.config.ts",
+    "django_check": {
+      "enabled": false,
+      "command": [
+        "python",
+        "manage.py",
+        "check",
+        "--deploy",
+        "--settings=config.settings.production"
+      ],
+      "cwd": "backend",
+      "timeout_seconds": 180
+    },
+    "require_django_check_in_production": true
+  },
+  "remote": {
+    "enabled": false,
+    "host": "",
+    "user": "ops",
+    "port": 22,
+    "connect_timeout_seconds": 10,
+    "strict_host_key_checking": "yes",
+    "identity_file": "",
+    "known_hosts_file": "",
+    "sudo_mode": "none",
+    "require_ufw": true,
+    "forbid_remote_user_docker_group": true,
+    "forbidden_public_ports": [
+      2375,
+      2376,
+      3000,
+      5432,
+      5555,
+      6379,
+      8000
+    ],
+    "allowed_public_bind_ports": [
+      22,
+      80,
+      443
+    ],
+    "secret_paths": [],
+    "backup_paths": [],
+    "backup_max_age_hours": 30,
+    "docker": {
+      "required": true,
+      "strict_container_allowlist": true,
+      "allowed_compose_projects": [
+        "konnaxion",
+        "backend"
+      ],
+      "allowed_image_prefixes": [
+        "konnaxion_",
+        "redis:",
+        "redis@",
+        "postgres:",
+        "postgres@",
+        "traefik:",
+        "traefik@",
+        "nginx:",
+        "nginx@"
+      ]
+    },
+    "iocs": {
+      "tokens": [
+        "negoroo/amco",
+        "supportxmr",
+        "/tmp/sshd",
+        "pakchoi",
+        "amco_",
+        "xmrig"
+      ],
+      "exact_paths": [
+        "/tmp/sshd"
+      ],
+      "usernames": [
+        "pakchoi"
+      ]
+    },
+    "require_fail2ban": true,
+    "require_unattended_upgrades": true,
+    "allowed_sudo_users": [],
+    "allowed_ssh_key_fingerprints": []
+  },
+  "external": {
+    "enabled": false,
+    "host": "konnaxion.com",
+    "https_port": 443,
+    "http_port": 80,
+    "required_open_ports": [
+      80,
+      443
+    ],
+    "administrative_ports": [
+      22
+    ],
+    "forbidden_ports": [
+      2375,
+      2376,
+      3000,
+      5432,
+      5555,
+      6379,
+      8000
+    ],
+    "timeout_seconds": 3,
+    "require_hsts": true,
+    "recommended_headers": [
+      "X-Content-Type-Options",
+      "X-Frame-Options",
+      "Referrer-Policy",
+      "Content-Security-Policy",
+      "Permissions-Policy"
+    ]
+  },
+  "recovery": {
+    "restore_attestation_file": "securitydiag/attestations/restore-drill.local.json",
+    "require_restore_drill_for_release": true
+  },
+  "release": {
+    "require_attestations": true,
+    "attestations": {
+      "fresh_vps": false,
+      "old_disk_not_cloned": false,
+      "all_compromised_secrets_rotated": false,
+      "clean_git_source_only": false,
+      "cloud_firewall_verified": false,
+      "old_vps_retired_or_isolated": false
+    }
+  },
+  "capsule_manager": {
+    "enabled": false,
+    "repo_root": "auto",
+    "instance_id": "",
+    "agent_port": 8765,
+    "require_for_release": true,
+    "unknown_is_blocking": true,
+    "require_local_agent_bind": true,
+    "security_gate_remote_path_template": "/opt/konnaxion/instances/{instance_id}/state/security-gate.json",
+    "agent_token_path": "/opt/konnaxion/manager/agent.token",
+    "audit_path": "/opt/konnaxion/agent/audit/agent-audit.jsonl",
+    "agent_service_name": "kx-agent",
+    "runtime_env_remote_path_template": "/opt/konnaxion/instances/{instance_id}/env/runtime.env",
+    "policy_files": {
+      "security_gate": "policies/security_gate.yaml",
+      "runtime": "policies/runtime_policy.yaml",
+      "agent_auth": "kx_agent/auth.py"
+    },
+    "expected_agent_user": "kx-agent"
+  }
+}

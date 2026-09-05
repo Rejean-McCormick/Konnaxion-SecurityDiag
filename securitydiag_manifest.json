@@ -1,0 +1,294 @@
+{
+  "schema": "securitydiag.manifest.v1",
+  "standard": "SecurityDiag",
+  "standard_version": "1.1.0",
+  "suite_name": "Konnaxion SecurityDiag",
+  "suite_version": "1.1.0",
+  "control_dir_default": ".securitydiag",
+  "levels": [
+    {
+      "id": "S00",
+      "name": "Diagnostic Integrity",
+      "module": "levels.s00_diagnostic_integrity",
+      "category": "diagnostics",
+      "order": 0,
+      "required": true,
+      "depends_on": [],
+      "timeout_seconds": 60,
+      "purpose": "Validate SecurityDiag itself before trusting security evidence."
+    },
+    {
+      "id": "S01",
+      "name": "Target & Security Context",
+      "module": "levels.s01_target_context",
+      "category": "context",
+      "order": 10,
+      "required": true,
+      "depends_on": [
+        "S00"
+      ],
+      "timeout_seconds": 60,
+      "purpose": "Resolve repository, Git state, safety mode, release phase and configured security targets."
+    },
+    {
+      "id": "S02",
+      "name": "Repository Secrets & Artifact Hygiene",
+      "module": "levels.s02_repo_secrets",
+      "category": "repo_security",
+      "order": 20,
+      "required": true,
+      "depends_on": [
+        "S01"
+      ],
+      "timeout_seconds": 180,
+      "purpose": "Detect tracked secrets, private keys, sensitive env files and risky deployment artifacts without copying secret values."
+    },
+    {
+      "id": "S03",
+      "name": "Supply Chain, Capsule Integrity & Automation",
+      "module": "levels.s03_supply_chain",
+      "category": "supply_chain",
+      "order": 30,
+      "required": true,
+      "depends_on": [
+        "S01"
+      ],
+      "timeout_seconds": 300,
+      "purpose": "Review dependency pinning, CI/container supply chain, Capsule Manager signed-artifact policy and declared dependency audits."
+    },
+    {
+      "id": "S04",
+      "name": "Application Production Security",
+      "module": "levels.s04_app_production",
+      "category": "application_security",
+      "order": 40,
+      "required": true,
+      "depends_on": [
+        "S01"
+      ],
+      "timeout_seconds": 300,
+      "purpose": "Inspect Konnaxion production configuration, Django security controls and compose exposure."
+    },
+    {
+      "id": "S05",
+      "name": "Clean Host & OS Baseline",
+      "module": "levels.s05_host_baseline",
+      "category": "host",
+      "order": 50,
+      "required": true,
+      "depends_on": [
+        "S00"
+      ],
+      "timeout_seconds": 120,
+      "purpose": "Establish remote host identity, OS state, time sync and pending update evidence."
+    },
+    {
+      "id": "S06",
+      "name": "SSH Hardening",
+      "module": "levels.s06_ssh",
+      "category": "host_access",
+      "order": 60,
+      "required": true,
+      "depends_on": [
+        "S05"
+      ],
+      "timeout_seconds": 120,
+      "purpose": "Verify effective SSH authentication and forwarding policy."
+    },
+    {
+      "id": "S07",
+      "name": "Firewall & Listening Ports",
+      "module": "levels.s07_firewall_ports",
+      "category": "network",
+      "order": 70,
+      "required": true,
+      "depends_on": [
+        "S05"
+      ],
+      "timeout_seconds": 120,
+      "purpose": "Verify host firewall evidence and ensure internal service ports are not bound publicly."
+    },
+    {
+      "id": "S08",
+      "name": "Docker & Capsule Runtime Policy",
+      "module": "levels.s08_docker",
+      "category": "container_security",
+      "order": 80,
+      "required": true,
+      "depends_on": [
+        "S05",
+        "S07"
+      ],
+      "timeout_seconds": 180,
+      "purpose": "Check Docker privilege boundaries, dangerous mounts/namespaces, image allowlists and published ports against Konnaxion runtime policy."
+    },
+    {
+      "id": "S09",
+      "name": "Runtime Isolation, Agent & Security Gate",
+      "module": "levels.s09_runtime",
+      "category": "runtime",
+      "order": 90,
+      "required": true,
+      "depends_on": [
+        "S08"
+      ],
+      "timeout_seconds": 180,
+      "purpose": "Correlate runtime services with Capsule Manager Agent trust boundaries, network profile and exported Security Gate evidence."
+    },
+    {
+      "id": "S10",
+      "name": "Secrets & Filesystem Permissions",
+      "module": "levels.s10_secret_permissions",
+      "category": "secrets",
+      "order": 100,
+      "required": true,
+      "depends_on": [
+        "S05"
+      ],
+      "timeout_seconds": 120,
+      "purpose": "Verify sensitive remote paths and SSH material are not broadly readable."
+    },
+    {
+      "id": "S11",
+      "name": "Persistence & Incident IOC Scan",
+      "module": "levels.s11_persistence_ioc",
+      "category": "incident_recovery",
+      "order": 110,
+      "required": true,
+      "depends_on": [
+        "S05",
+        "S08"
+      ],
+      "timeout_seconds": 180,
+      "purpose": "Look for known compromise indicators, suspicious persistence and executable artifacts in temporary areas."
+    },
+    {
+      "id": "S12",
+      "name": "External TLS & Attack Surface",
+      "module": "levels.s12_external_surface",
+      "category": "external_surface",
+      "order": 120,
+      "required": true,
+      "depends_on": [
+        "S00"
+      ],
+      "timeout_seconds": 180,
+      "purpose": "Probe configured public endpoints, TLS, redirects, security headers and forbidden public TCP ports."
+    },
+    {
+      "id": "S13",
+      "name": "Backup & Recovery Evidence",
+      "module": "levels.s13_backup_recovery",
+      "category": "recovery",
+      "order": 130,
+      "required": true,
+      "depends_on": [
+        "S05"
+      ],
+      "timeout_seconds": 120,
+      "purpose": "Verify recent backup evidence and require an explicit isolated restore-drill attestation for release."
+    },
+    {
+      "id": "S14",
+      "name": "Security Release Gate",
+      "module": "levels.s14_release_gate",
+      "category": "release_gate",
+      "order": 140,
+      "required": true,
+      "depends_on": [
+        "S02",
+        "S03",
+        "S04",
+        "S06",
+        "S07",
+        "S08",
+        "S09",
+        "S10",
+        "S11",
+        "S12",
+        "S13"
+      ],
+      "timeout_seconds": 60,
+      "purpose": "Combine SecurityDiag evidence with Capsule Manager Security Gate evidence and human recovery attestations."
+    }
+  ],
+  "campaigns": {
+    "repo": {
+      "description": "Repository, supply-chain and application production-security checks.",
+      "levels": [
+        "S00",
+        "S01",
+        "S02",
+        "S03",
+        "S04"
+      ]
+    },
+    "host": {
+      "description": "Remote VPS baseline through runtime, secrets and IOC checks.",
+      "levels": [
+        "S00",
+        "S05",
+        "S06",
+        "S07",
+        "S08",
+        "S09",
+        "S10",
+        "S11"
+      ]
+    },
+    "external": {
+      "description": "External DNS/TLS/HTTP/port exposure checks.",
+      "levels": [
+        "S00",
+        "S12"
+      ]
+    },
+    "incident": {
+      "description": "Remote host access, Docker and persistence/IOC evidence for incident recovery.",
+      "levels": [
+        "S00",
+        "S05",
+        "S06",
+        "S07",
+        "S08",
+        "S10",
+        "S11"
+      ]
+    },
+    "predeploy": {
+      "description": "Local repository + clean-host checks before application deployment.",
+      "levels": [
+        "S00",
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06",
+        "S07",
+        "S10",
+        "S11"
+      ]
+    },
+    "release": {
+      "description": "Complete Konnaxion security qualification S00-S14.",
+      "levels": [
+        "S00",
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06",
+        "S07",
+        "S08",
+        "S09",
+        "S10",
+        "S11",
+        "S12",
+        "S13",
+        "S14"
+      ]
+    }
+  }
+}
