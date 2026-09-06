@@ -1,0 +1,12 @@
+{
+  "schema": "securitydiag.config.v1.1",
+  "target_repo_root": "C:\\mycode\\Konnaxion\\Konnaxion",
+  "capsule_manager": {
+    "enabled": true,
+    "repo_root": "C:\\mycode\\Konnaxion\\Konnaxion_Capsule_Manager",
+    "instance_id": "",
+    "require_for_release": true,
+    "unknown_is_blocking": true,
+    "require_local_agent_bind": true
+  }
+}
