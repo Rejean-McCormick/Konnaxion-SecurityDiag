@@ -4,6 +4,7 @@ import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 SECRET_RX = [
     re.compile(r"(?i)(DJANGO_SECRET_KEY|POSTGRES_PASSWORD|DATABASE_URL|API[_-]?KEY|ACCESS[_-]?TOKEN|PRIVATE[_-]?KEY)\s*[:=]\s*([^\s,;]+)"),
@@ -12,15 +13,43 @@ SECRET_RX = [
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
 ]
 
+SENSITIVE_CONFIG_KEYS = {
+    "django_secret_key",
+    "postgres_password",
+    "database_url",
+    "api_key",
+    "access_token",
+    "private_key",
+    "password",
+    "token",
+    "bearer_token",
+    "agent_token",
+    "signing_private_key",
+}
+SENSITIVE_CONFIG_SUFFIXES = (
+    "_password",
+    "_secret",
+    "_secret_key",
+    "_api_key",
+    "_access_token",
+    "_private_key",
+    "_bearer_token",
+    "_token",
+)
+
+
 def utc_now():
     return datetime.now(timezone.utc).isoformat()
+
 
 def read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
+
 def write_json(path: Path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
 
 def redact(text: str, replacement="<REDACTED>"):
     if not text:
@@ -33,17 +62,47 @@ def redact(text: str, replacement="<REDACTED>"):
             out = rx.sub(replacement, out)
     return out
 
+
+def _sensitive_config_key(key: Any) -> bool:
+    name = str(key).strip().lower().replace("-", "_")
+    if name in SENSITIVE_CONFIG_KEYS:
+        return True
+    return any(name.endswith(suffix) for suffix in SENSITIVE_CONFIG_SUFFIXES)
+
+
+def redact_data(value: Any, replacement="<REDACTED>", *, _key: Any = None):
+    """Recursively redact secret-bearing config/evidence values.
+
+    Path/fingerprint metadata such as ``agent_token_path`` remains visible;
+    secret values under known sensitive keys are replaced defensively.
+    Free-form strings are still passed through the existing regex redactor.
+    """
+    if _key is not None and _sensitive_config_key(_key):
+        return replacement
+    if isinstance(value, dict):
+        return {key: redact_data(item, replacement, _key=key) for key, item in value.items()}
+    if isinstance(value, list):
+        return [redact_data(item, replacement) for item in value]
+    if isinstance(value, tuple):
+        return [redact_data(item, replacement) for item in value]
+    if isinstance(value, str):
+        return redact(value, replacement)
+    return value
+
+
 def tail_text(text: str, limit_bytes: int):
     raw = (text or "").encode("utf-8", "replace")
     if len(raw) <= limit_bytes:
         return text or ""
     return raw[-limit_bytes:].decode("utf-8", "replace")
 
+
 def safe_rel(root: Path, path: Path):
     try:
         return path.resolve(strict=False).relative_to(root.resolve(strict=False)).as_posix()
     except Exception:
         return str(path)
+
 
 def parse_bool(value):
     if isinstance(value, bool):

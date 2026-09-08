@@ -243,6 +243,23 @@
       "runtime": "policies/runtime_policy.yaml",
       "agent_auth": "kx_agent/auth.py"
     },
-    "expected_agent_user": "kx-agent"
+    "expected_agent_user": "kx-agent",
+    "required_gate_checks": [
+      "capsule_signature",
+      "image_checksums",
+      "manifest_schema",
+      "secrets_present",
+      "secrets_not_default",
+      "firewall_enabled",
+      "dangerous_ports_blocked",
+      "postgres_not_public",
+      "redis_not_public",
+      "docker_socket_not_mounted",
+      "no_privileged_containers",
+      "no_host_network",
+      "allowed_images_only",
+      "admin_surface_private",
+      "backup_configured"
+    ]
   }
 }

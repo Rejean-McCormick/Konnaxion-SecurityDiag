@@ -5,7 +5,7 @@ from pathlib import Path
 from . import SUMMARY_SCHEMA, VERSION
 from .config import load_config
 from .manifest import load_manifest, resolve_selection
-from .util import read_json, utc_now, write_json
+from .util import read_json, redact, redact_data, utc_now, write_json
 from .verdicts import campaign_verdict, exit_code
 from .vcs import git_info
 
@@ -28,7 +28,7 @@ def run_campaign(tool_root:Path,selection:str,target_override=None,fail_fast=Non
     levels=resolve_selection(m,selection)
     target=Path(cfg["_target_root"]); control=Path(cfg["_control_root"])
     run_id=make_run_id(); run_root=control/"runs"/run_id; run_root.mkdir(parents=True,exist_ok=True)
-    write_json(run_root/"effective_config.json",{k:v for k,v in cfg.items() if not k.startswith("_")})
+    write_json(run_root/"effective_config.json",redact_data({k:v for k,v in cfg.items() if not k.startswith("_")}))
     before=git_info(target) if cfg.get("execution",{}).get("protect_tracked_files",True) else None
     results={}; started=utc_now()
     ff=cfg.get("execution",{}).get("fail_fast",False) if fail_fast is None else fail_fast
@@ -56,7 +56,7 @@ def run_campaign(tool_root:Path,selection:str,target_override=None,fail_fast=Non
                       "verdict":"INFRA_ERROR",
                       "findings":[{"id":"diagnostics.worker.missing_result","verdict":"INFRA_ERROR","category":"diagnostics",
                                    "message":"Worker did not produce a result.",
-                                   "evidence":{"return_code":cp.returncode,"stderr_tail":(cp.stderr or "")[-2000:]}}],
+                                   "evidence":{"return_code":cp.returncode,"stderr_tail":redact((cp.stderr or "")[-2000:])}}],
                       "artifacts":[],"metrics":{}}
                 write_json(out,data)
         except subprocess.TimeoutExpired:

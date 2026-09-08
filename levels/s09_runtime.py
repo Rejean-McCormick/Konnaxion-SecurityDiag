@@ -88,6 +88,7 @@ def _run_capsule_manager(cfg, report):
     from securitydiag_core.capsule_manager import (
         capsule_enabled,
         gate_is_release_acceptable,
+        release_required_gate_checks,
         remote_probe_script,
     )
 
@@ -149,7 +150,8 @@ def _run_capsule_manager(cfg, report):
         line for line in listener.splitlines()
         if re.search(rf"(?:0\.0\.0\.0|\[::\]|:::|\*):{port}\b", line)
     ]
-    require_local = bool(cm.get("require_local_agent_bind", True))
+    require_release = bool(cm.get("require_for_release", True))
+    require_local = True if require_release else bool(cm.get("require_local_agent_bind", True))
 
     if public_listener:
         listener_verdict = "FAIL"
@@ -267,9 +269,22 @@ def _run_capsule_manager(cfg, report):
     except json.JSONDecodeError:
         payload = {"status": "UNKNOWN", "reason": "invalid security-gate.json"}
 
+    try:
+        required_checks = release_required_gate_checks(cfg)
+    except ValueError as exc:
+        report.add(
+            "capsule.security_gate.evidence",
+            "CONFIG_ERROR",
+            "capsule_security",
+            str(exc),
+            release_blocker=True,
+        )
+        return
+
     acceptable, detail = gate_is_release_acceptable(
         payload,
-        unknown_is_blocking=bool(cm.get("unknown_is_blocking", True)),
+        unknown_is_blocking=(True if require_release else bool(cm.get("unknown_is_blocking", True))),
+        required_checks=required_checks,
     )
     status = detail["status"]
     gate_verdict = "PASS" if acceptable else "FAIL"
@@ -280,7 +295,7 @@ def _run_capsule_manager(cfg, report):
         f"Capsule Manager Security Gate status: {status}.",
         evidence=detail,
         recommendation=(
-            "Run the Capsule Manager Security Gate and resolve every FAIL_BLOCKING/UNKNOWN check."
+            "Run the complete Capsule Manager Security Gate and resolve missing, SKIPPED, FAIL_BLOCKING, or UNKNOWN required checks."
             if not acceptable
             else None
         ),

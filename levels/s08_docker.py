@@ -117,26 +117,60 @@ def run(cfg,report):
                "Known incident IOC matched Docker state." if ioc else "No configured incident IOC matched Docker state.",
                evidence=ioc[:100] if ioc else None)
     docker_cfg=cfg.get("remote",{}).get("docker",{})
-    allowed_prefixes=tuple(str(x) for x in docker_cfg.get("allowed_image_prefixes",[]))
-    strict_images=bool(docker_cfg.get("strict_container_allowlist",False))
-    unknown_images=[
-        image for image in imgs
-        if strict_images and allowed_prefixes and not any(image.startswith(prefix) for prefix in allowed_prefixes)
-    ]
-    report.add("docker.images.allowlist","FAIL" if unknown_images else ("PASS" if strict_images else "SKIP"),"docker",
-               "Unexpected Docker images are present on the host." if unknown_images else ("Docker image inventory matches configured prefixes." if strict_images else "Strict image allowlist is disabled."),
-               evidence=unknown_images[:100] if unknown_images else None)
+    strict=bool(docker_cfg.get("strict_container_allowlist",False))
 
-    allowed_projects=set(docker_cfg.get("allowed_compose_projects",[]))
-    strict=docker_cfg.get("strict_container_allowlist",False)
-    unknown=[]
-    if strict and allowed_projects:
-        for x in inspect:
-            m=re.search(r'\|project=([^|]*)\|',x)
-            project=(m.group(1).strip() if m else "")
-            if project not in allowed_projects:
-                unknown.append(x[:300])
-    report.add("docker.container_allowlist","FAIL" if unknown else ("PASS" if strict else "SKIP"),"docker",
-               "Unexpected running container projects detected." if unknown else ("Running container projects match configured allowlist." if strict else "Strict container allowlist is disabled."),
-               evidence=unknown[:100] if unknown else None)
+    allowed_prefixes=tuple(str(x).strip() for x in docker_cfg.get("allowed_image_prefixes",[]) if str(x).strip())
+    if strict and not allowed_prefixes:
+        report.add(
+            "docker.images.allowlist",
+            "CONFIG_ERROR",
+            "docker",
+            "Strict Docker image allowlist is enabled but allowed_image_prefixes is empty.",
+            recommendation="Configure a reviewed runtime image allowlist before release.",
+            release_blocker=True,
+        )
+    else:
+        unknown_images=[
+            image for image in imgs
+            if strict and not any(image.startswith(prefix) for prefix in allowed_prefixes)
+        ]
+        report.add(
+            "docker.images.allowlist",
+            "FAIL" if unknown_images else ("PASS" if strict else "SKIP"),
+            "docker",
+            "Unexpected Docker images are present on the host."
+            if unknown_images
+            else ("Docker image inventory matches configured prefixes." if strict else "Strict image allowlist is disabled."),
+            evidence=unknown_images[:100] if unknown_images else None,
+            release_blocker=bool(unknown_images),
+        )
+
+    allowed_projects={str(x).strip() for x in docker_cfg.get("allowed_compose_projects",[]) if str(x).strip()}
+    if strict and not allowed_projects:
+        report.add(
+            "docker.container_allowlist",
+            "CONFIG_ERROR",
+            "docker",
+            "Strict Docker container allowlist is enabled but allowed_compose_projects is empty.",
+            recommendation="Configure reviewed Compose project names before release.",
+            release_blocker=True,
+        )
+    else:
+        unknown=[]
+        if strict:
+            for x in inspect:
+                m=re.search(r'\|project=([^|]*)\|',x)
+                project=(m.group(1).strip() if m else "")
+                if project not in allowed_projects:
+                    unknown.append(x[:300])
+        report.add(
+            "docker.container_allowlist",
+            "FAIL" if unknown else ("PASS" if strict else "SKIP"),
+            "docker",
+            "Unexpected running container projects detected."
+            if unknown
+            else ("Running container projects match configured allowlist." if strict else "Strict container allowlist is disabled."),
+            evidence=unknown[:100] if unknown else None,
+            release_blocker=bool(unknown),
+        )
     report.metrics.update({"running_containers":len(ps),"images":len(imgs),"inspect_rows":len(inspect)})

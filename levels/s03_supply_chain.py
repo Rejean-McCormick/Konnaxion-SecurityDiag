@@ -2,9 +2,45 @@ from __future__ import annotations
 import re, shutil
 from pathlib import Path
 from securitydiag_core.scanner import iter_files, bounded_text
-from securitydiag_core.commands import run_command
+from securitydiag_core.commands import normalize_command, run_command
 
 SHA40=re.compile(r"^[0-9a-fA-F]{40}$")
+
+
+def _validate_declared_audit_command(command):
+    """Return normalized argv for approved read-only vulnerability audits."""
+    argv = normalize_command(command)
+    if not argv:
+        raise ValueError("Audit command is empty.")
+    exe = Path(argv[0]).name.lower()
+    if exe.endswith(".exe"):
+        exe = exe[:-4]
+
+    lower = [str(x).lower() for x in argv]
+    forbidden = {"fix", "--fix", "--force", "--output", "-o"}
+    if any(
+        token in forbidden
+        or token.startswith("--output=")
+        or token.startswith("--fix=")
+        or (token.startswith("-o") and token != "-o")
+        for token in lower[1:]
+    ):
+        raise ValueError("Audit command contains a mutating/output option not allowed by SecurityDiag.")
+
+    approved = False
+    if exe in {"pnpm", "npm", "yarn"}:
+        approved = len(lower) >= 2 and lower[1] == "audit"
+    elif exe == "pip-audit":
+        approved = True
+    elif exe in {"python", "python3", "py"}:
+        approved = len(lower) >= 3 and lower[1:3] == ["-m", "pip_audit"]
+
+    if not approved:
+        raise ValueError(
+            "Declared audits are limited to package-manager vulnerability audit commands "
+            "(pnpm/npm/yarn audit or pip-audit)."
+        )
+    return argv
 
 
 def _run_capsule_manager_alignment(cfg, report):
@@ -138,7 +174,18 @@ def run(cfg,report):
         cwd=(root/a.get("cwd",".")).resolve(strict=False)
         if not cwd.is_relative_to(root):
             report.add(f"supply_chain.audit.{aid}","CONFIG_ERROR","supply_chain","Audit cwd escapes repository."); continue
-        r=run_command(a["command"],cwd=cwd,timeout_seconds=int(a.get("timeout_seconds",300)))
+        try:
+            audit_argv=_validate_declared_audit_command(a.get("command"))
+        except (TypeError, ValueError) as exc:
+            report.add(
+                f"supply_chain.audit.{aid}",
+                "CONFIG_ERROR",
+                "supply_chain",
+                str(exc),
+                recommendation="Declare only a reviewed, read-only package vulnerability audit command.",
+            )
+            continue
+        r=run_command(audit_argv,cwd=cwd,timeout_seconds=int(a.get("timeout_seconds",300)))
         report.add(f"supply_chain.audit.{aid}","PASS" if r["exit_code"]==0 else "FAIL","supply_chain",
                    f"Declared dependency audit {aid} {'passed' if r['exit_code']==0 else 'failed'}.",
                    evidence={"exit_code":r["exit_code"],"stdout_tail":r["stdout_tail"][-4000:],"stderr_tail":r["stderr_tail"][-4000:]})
