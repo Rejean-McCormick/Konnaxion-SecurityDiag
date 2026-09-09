@@ -3,6 +3,10 @@ import os
 from pathlib import Path
 
 
+_SAMPLE_BYTES = 8192
+_TEXT_CONTROL_BYTES = {7, 8, 9, 10, 12, 13, 27}
+
+
 def iter_files(root: Path, cfg, *, max_files=None, stats=None):
     scan=cfg.get("scan",{})
     excluded=set(scan.get("exclude_dirs",[]))
@@ -25,14 +29,41 @@ def iter_files(root: Path, cfg, *, max_files=None, stats=None):
             state["files_yielded"] = count
 
 
+def _looks_binary(sample: bytes) -> bool:
+    """Conservatively identify obvious binary content from a bounded sample."""
+    if not sample:
+        return False
+    if b"\x00" in sample:
+        return True
+
+    non_text = sum(
+        1 for byte in sample
+        if byte < 32 and byte not in _TEXT_CONTROL_BYTES
+    )
+    return (non_text / len(sample)) > 0.10
+
+
 def bounded_text_status(path: Path, max_bytes=1048576):
-    """Return ``(text, reason)`` where reason explains skipped content."""
+    """Return ``(text, reason)`` where reason explains skipped content.
+
+    Obvious binary files are identified from a small sample before the size bound is
+    applied. This keeps large media/JAR/archive assets from falsely turning secret-scan
+    coverage into PARTIAL while still treating oversized text-like files as incomplete.
+    """
     try:
-        if path.stat().st_size>max_bytes:
-            return None, "too_large"
-        raw=path.read_bytes()
-        if b"\x00" in raw[:4096]:
+        size = path.stat().st_size
+        with path.open("rb") as handle:
+            sample = handle.read(_SAMPLE_BYTES)
+
+        if _looks_binary(sample):
             return None, "binary"
+        if size > max_bytes:
+            return None, "too_large"
+
+        if size <= len(sample):
+            raw = sample
+        else:
+            raw = path.read_bytes()
         return raw.decode("utf-8","replace"), None
     except Exception:
         return None, "read_error"
