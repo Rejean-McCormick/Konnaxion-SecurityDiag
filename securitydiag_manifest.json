@@ -1,9 +1,9 @@
 {
   "schema": "securitydiag.manifest.v1",
   "standard": "SecurityDiag",
-  "standard_version": "1.1.0",
+  "standard_version": "1.1.2",
   "suite_name": "Konnaxion SecurityDiag",
-  "suite_version": "1.1.0",
+  "suite_version": "1.1.2",
   "control_dir_default": ".securitydiag",
   "levels": [
     {

@@ -1,9 +1,39 @@
 # SecurityDiag Pack Validation Report
 
 **Pack:** Konnaxion SecurityDiag  
-**Version:** 1.1.0  
+**Version:** 1.1.2  
 **Original validation date:** 2026-09-05  
 **Security hardening revision:** 2026-09-08 (S02 coverage refinement)
+
+
+
+## v1.1.2 Windows GUI launcher (2026-09-10)
+
+Added `SecurityDiagLauncher.pyw`, a standard-library Tkinter launcher for Windows double-click use. It invokes the unchanged read-only CLI in a background child process, captures output live, and exposes the generated evidence directory. No remediation or additional remote privilege is introduced.
+
+Validation in the packaging workspace:
+
+```text
+compileall: PASS
+unit tests: 32 passed
+launcher helper/import checks: PASS
+GUI rendering: not executed in the headless Linux packaging environment
+```
+
+## v1.1.1 live-server transport hotfix (2026-09-10)
+
+First real Windows-to-VPS host execution exposed a transport-only defect: `subprocess.run(..., text=True)` translated LF to CRLF on Windows stdin, so remote `bash -s` received stray `\r` bytes and S05 ended in `INFRA_ERROR`.
+
+The fix sends LF-normalized UTF-8 bytes to SSH, adds `ssh -T`, and skips `sudo -n` when the configured remote user is already `root`. Security checks remain read-only and fail-closed.
+
+Validation in the patch workspace:
+
+```text
+compileall: PASS
+unit tests: 29 passed
+```
+
+`doctor` was not rerun in the Linux packaging sandbox because the supplied configuration intentionally references a Windows target path. The user had already confirmed `doctor` PASS on the Windows host before the live host campaign.
 
 ## v1.1 security integration
 

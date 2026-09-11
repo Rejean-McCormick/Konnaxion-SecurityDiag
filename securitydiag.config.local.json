@@ -1,10 +1,58 @@
 {
   "schema": "securitydiag.config.v1.1",
   "target_repo_root": "C:\\mycode\\Konnaxion\\Konnaxion",
+  "phase": "production",
+  "execution": {
+    "allow_network": true,
+    "allow_declared_audits": false
+  },
+  "remote": {
+    "enabled": true,
+    "host": "2.56.97.41",
+    "user": "root",
+    "port": 22,
+    "identity_file": "C:/Users/rejea/.ssh/id_ed25519",
+    "strict_host_key_checking": "yes",
+    "sudo_mode": "noninteractive",
+    "secret_paths": [
+      "/opt/konnaxion/instances/konnaxion-prod/env/django.env",
+      "/opt/konnaxion/instances/konnaxion-prod/env/postgres.env",
+      "/opt/konnaxion/instances/konnaxion-prod/env/redis.env",
+      "/opt/konnaxion/instances/konnaxion-prod/env/frontend.env"
+    ],
+    "backup_paths": [
+      "/opt/konnaxion/backups"
+    ],
+    "docker": {
+      "required": true,
+      "strict_container_allowlist": true,
+      "allowed_compose_projects": [
+        "konnaxion-konnaxion-prod"
+      ],
+      "allowed_image_prefixes": [
+        "konnaxion/",
+        "redis:",
+        "redis@",
+        "postgres:",
+        "postgres@",
+        "traefik:",
+        "traefik@",
+        "nginx:",
+        "nginx@"
+      ]
+    }
+  },
+  "external": {
+    "enabled": true,
+    "host": "konnaxion.com"
+  },
   "capsule_manager": {
     "enabled": true,
     "repo_root": "C:\\mycode\\Konnaxion\\Konnaxion_Capsule_Manager",
-    "instance_id": "",
+    "instance_id": "konnaxion-prod",
+    "agent_port": 8765,
+    "agent_service_name": "konnaxion-agent",
+    "expected_agent_user": "kx-agent",
     "require_for_release": true,
     "unknown_is_blocking": true,
     "require_local_agent_bind": true

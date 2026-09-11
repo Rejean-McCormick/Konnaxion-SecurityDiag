@@ -1,6 +1,6 @@
 # Konnaxion SecurityDiag
 
-**Version:** 1.1.0  
+**Version:** 1.1.2  
 **Mode:** copy-in, read-only security qualification frame  
 **Runtime:** Python 3.10+ standard library only  
 **Primary target:** Konnaxion repository + fresh Linux production VPS  
@@ -53,6 +53,10 @@ C:\mycode\Konnaxion\
 ```
 
 Add the entries from `INSTALL_GITIGNORE.txt` to the repository `.gitignore`.
+
+## Windows GUI launcher
+
+Double-click `SecurityDiagLauncher.pyw` to run SecurityDiag without opening a console window. The launcher exposes the existing read-only campaigns (`host`, `external`, `repo`, `incident`, `predeploy`, `release`), Doctor, Show config, and the evidence folder from the latest run. It invokes the same `securitydiag.py` CLI and does not add remediation privileges.
 
 ## Quick start — local repository only
 
@@ -283,5 +287,6 @@ SECURITY QUALIFIED FOR RELEASE
 ```
 
 `FAIL`, `BLOCKED`, required `SKIPPED`, or blocking `UNKNOWN` means **no release**.
-#   K o n n a x i o n - S e c u r i t y D i a g  
+#   K o n n a x i o n - S e c u r i t y D i a g 
+ 
  

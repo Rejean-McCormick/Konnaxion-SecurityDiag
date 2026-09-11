@@ -22,7 +22,7 @@ def ssh_argv(cfg):
     ok,msg=remote_ready(cfg)
     if not ok: raise RemoteBlocked(msg)
     r=cfg["remote"]; host=str(r["host"]); user=str(r["user"]); port=int(r.get("port",22))
-    argv=["ssh","-p",str(port),"-o","BatchMode=yes",
+    argv=["ssh","-T","-p",str(port),"-o","BatchMode=yes",
           "-o",f"ConnectTimeout={int(r.get('connect_timeout_seconds',10))}",
           "-o",f"StrictHostKeyChecking={r.get('strict_host_key_checking','yes')}"]
     if r.get("identity_file"):
@@ -32,27 +32,44 @@ def ssh_argv(cfg):
     argv += [f"{user}@{host}"]
     return argv
 
+def _script_bytes(script):
+    """Return LF-only UTF-8 bytes so Windows cannot translate stdin to CRLF."""
+    if isinstance(script, bytes):
+        text=script.decode("utf-8","replace")
+    else:
+        text=str(script)
+    text=text.replace("\r\n","\n").replace("\r","\n")
+    return text.encode("utf-8")
+
+def _decode(value):
+    if isinstance(value,bytes):
+        return value.decode("utf-8","replace")
+    return value or ""
+
 def run_script(cfg, script, *, privileged=False, timeout_seconds=90):
     r=cfg.get("remote",{})
-    if privileged:
+    remote_user=str(r.get("user","")).strip()
+    if privileged and remote_user != "root":
         if r.get("sudo_mode","none")!="noninteractive":
             raise RemoteBlocked("Privileged remote evidence requires remote.sudo_mode=noninteractive.")
         remote_cmd="sudo -n bash -s"
     else:
+        # root is already privileged; do not require sudo to exist on minimal VPS images.
         remote_cmd="bash -s"
     argv=ssh_argv(cfg)+[remote_cmd]
     started=time.monotonic()
     try:
-        cp=subprocess.run(argv,input=script,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                          text=True,encoding="utf-8",errors="replace",
+        # Send bytes, not text. On Windows, text-mode subprocess stdin converts LF to CRLF,
+        # which makes bash receive stray '\r' characters and can break shell scripts.
+        cp=subprocess.run(argv,input=_script_bytes(script),stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                           timeout=timeout_seconds,shell=False,check=False)
+        out=_decode(cp.stdout); err=_decode(cp.stderr)
         return {"exit_code":cp.returncode,"timed_out":False,
                 "duration_seconds":round(time.monotonic()-started,3),
-                "stdout_tail":tail_text(redact(cp.stdout or ""),256*1024),
-                "stderr_tail":tail_text(redact(cp.stderr or ""),128*1024)}
+                "stdout_tail":tail_text(redact(out),256*1024),
+                "stderr_tail":tail_text(redact(err),128*1024)}
     except subprocess.TimeoutExpired as e:
-        out=e.stdout.decode("utf-8","replace") if isinstance(e.stdout,bytes) else (e.stdout or "")
-        err=e.stderr.decode("utf-8","replace") if isinstance(e.stderr,bytes) else (e.stderr or "")
+        out=_decode(e.stdout); err=_decode(e.stderr)
         return {"exit_code":None,"timed_out":True,
                 "duration_seconds":round(time.monotonic()-started,3),
                 "stdout_tail":tail_text(redact(out),256*1024),
