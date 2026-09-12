@@ -1,12 +1,12 @@
 # Konnaxion SecurityDiag
 
-**Version:** 1.1.2  
+**Version:** 1.2.1  
 **Mode:** copy-in, read-only security qualification frame  
 **Runtime:** Python 3.10+ standard library only  
 **Primary target:** Konnaxion repository + fresh Linux production VPS  
 **Integration:** Capsule Manager / Konnaxion Agent evidence-aware
 
-SecurityDiag applies the LevelUpDiag operating model to deployment security. It produces structured, repeatable evidence across the repository, application production configuration, Capsule Manager policies, remote VPS, Docker runtime, Konnaxion Agent boundary, incident-recovery indicators, public TLS/ports, backups and final release readiness.
+SecurityDiag applies the LevelUpDiag operating model to deployment security. It produces structured, repeatable evidence across the repository, application production configuration, Capsule Manager policies, remote VPS, Docker runtime, Konnaxion Agent boundary, incident-recovery indicators, public TLS/ports, backups and final release readiness. S04 also validates Konnaxion's standalone-first django-allauth/OIDC authentication contract.
 
 SecurityDiag is deliberately a **diagnostic and qualification layer**. It does not replace Capsule Manager and it never becomes an alternate privileged orchestrator.
 

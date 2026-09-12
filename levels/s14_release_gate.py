@@ -6,6 +6,26 @@ from securitydiag_core.manifest import load_manifest
 from securitydiag_core.util import read_json
 
 RELEASE_ACCEPTABLE = {"PASS", "WARN"}
+VALID_RELEASE_PROFILES = {"standard_release", "incident_recovery"}
+
+
+def _release_profile(cfg) -> str:
+    release_cfg = cfg.get("release", {})
+    profile = str(release_cfg.get("profile", "standard_release")).strip().lower()
+    if profile not in VALID_RELEASE_PROFILES:
+        allowed = ", ".join(sorted(VALID_RELEASE_PROFILES))
+        raise ValueError(f"release.profile must be one of: {allowed}")
+    return profile
+
+
+def _attestation_state(release_cfg: dict, profile: str) -> tuple[bool, list[str], list[str]]:
+    attestations = release_cfg.get("attestations", {})
+    missing = [key for key, value in attestations.items() if value is not True]
+    recorded = [key for key, value in attestations.items() if value is True]
+    required = profile == "incident_recovery" and bool(
+        release_cfg.get("require_attestations", True)
+    )
+    return required, missing, recorded
 
 
 def _load_prior(run_root: Path) -> list[dict]:
@@ -158,12 +178,40 @@ def run(cfg, report):
         )
 
     release_cfg = cfg.get("release", {})
-    attestations_required = bool(release_cfg.get("require_attestations", True))
-    attestations = release_cfg.get("attestations", {})
-    missing_attestations = [key for key, value in attestations.items() if value is not True]
+    profile_error = None
+    try:
+        release_profile = _release_profile(cfg)
+    except Exception as exc:
+        release_profile = "invalid"
+        profile_error = f"{type(exc).__name__}: {exc}"
+
+    report.add(
+        "release.profile",
+        "CONFIG_ERROR" if profile_error else "PASS",
+        "release_gate",
+        "Release profile is invalid."
+        if profile_error
+        else f"Release profile: {release_profile}.",
+        evidence={
+            "profile": release_profile,
+            "allowed": sorted(VALID_RELEASE_PROFILES),
+            "error": profile_error,
+        },
+        release_blocker=bool(profile_error),
+    )
+
+    if profile_error:
+        attestations_required = False
+        missing_attestations = []
+        recorded_attestations = []
+    else:
+        attestations_required, missing_attestations, recorded_attestations = _attestation_state(
+            release_cfg, release_profile
+        )
+
     blocking_attestations = missing_attestations if attestations_required else []
 
-    if attestations_required:
+    if release_profile == "incident_recovery" and attestations_required:
         report.add(
             "release.incident_recovery.attestations",
             "BLOCKED" if blocking_attestations else "PASS",
@@ -172,38 +220,57 @@ def run(cfg, report):
             if blocking_attestations
             else "All required incident-recovery attestations are recorded.",
             evidence={
+                "profile": release_profile,
                 "missing": blocking_attestations,
-                "recorded": [key for key, value in attestations.items() if value is True],
+                "recorded": recorded_attestations,
             },
             recommendation=(
-                "Do not mark the deployment releasable until each human-controlled "
-                "recovery condition is genuinely verified."
+                "Verify each human-controlled recovery condition before declaring an "
+                "incident-recovery release."
                 if blocking_attestations
                 else None
             ),
         )
-    else:
+    elif release_profile == "incident_recovery":
         report.add(
             "release.incident_recovery.attestations",
             "WARN",
             "release_gate",
-            "Human incident-recovery attestations are disabled.",
-            evidence={"unrecorded": missing_attestations},
+            "Incident-recovery attestations are explicitly disabled for this run.",
+            evidence={
+                "profile": release_profile,
+                "unrecorded": missing_attestations,
+                "recorded": recorded_attestations,
+            },
+        )
+    elif not profile_error:
+        report.add(
+            "release.incident_recovery.attestations",
+            "SKIP",
+            "release_gate",
+            "Incident-recovery attestations are not required for the standard release profile.",
+            evidence={
+                "profile": release_profile,
+                "unrecorded": missing_attestations,
+                "recorded": recorded_attestations,
+            },
         )
 
-    if technical_complete and not blocking_attestations and capsule_ok:
+    gate_technical_ok = technical_complete and capsule_ok and not profile_error
+
+    if gate_technical_ok and not blocking_attestations:
         report.add(
             "release.security_gate",
             "PASS",
             "release_gate",
             "SecurityDiag + Capsule Manager release gate is satisfied. Warnings remain visible and must be dispositioned.",
         )
-    elif not technical_complete or not capsule_ok:
+    elif not gate_technical_ok:
         report.add(
             "release.security_gate",
             "FAIL",
             "release_gate",
-            "Combined release gate is not satisfied due to missing/failed/incomplete technical evidence.",
+            "Combined release gate is not satisfied due to missing/failed/incomplete technical evidence or invalid release profile.",
             release_blocker=True,
         )
     else:
@@ -211,6 +278,6 @@ def run(cfg, report):
             "release.security_gate",
             "BLOCKED",
             "release_gate",
-            "Combined release gate awaits human incident-recovery attestations.",
+            "Incident-recovery release gate awaits required human attestations.",
             release_blocker=True,
         )

@@ -1,0 +1,12 @@
+# Exact policy installed by tools/SSH_HARDENING_ASSISTANT.pyw for the default account.
+# The helper substitutes the selected admin username when applying it.
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+AllowUsers kx-admin
+X11Forwarding no
+AllowTcpForwarding no
+ClientAliveInterval 300
+ClientAliveCountMax 2
+MaxAuthTries 3

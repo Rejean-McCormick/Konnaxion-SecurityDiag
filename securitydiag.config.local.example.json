@@ -57,5 +57,11 @@
     "audit_path": "/opt/konnaxion/agent/audit/agent-audit.jsonl",
     "agent_service_name": "kx-agent",
     "expected_agent_user": "kx-agent"
+  },
+  "application": {
+    "django_check": {
+      "enabled": false,
+      "environment": {}
+    }
   }
 }

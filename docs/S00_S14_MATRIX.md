@@ -6,7 +6,7 @@
 | S01 | Target & Security Context | repo, Git state, phase, network policy |
 | S02 | Repository Secrets & Artifact Hygiene | tracked/untracked secret patterns, keys, env files, archives |
 | S03 | Supply Chain, Capsule Integrity & Automation | lockfiles, CI pinning, image pinning, Capsule Manager security-policy alignment, declared audits |
-| S04 | Application Production Security | Django production settings, compose exposure, optional `check --deploy` |
+| S04 | Application Production Security + common-auth contract | Django production settings, compose exposure, optional `check --deploy` |
 | S05 | Clean Host & OS Baseline | host identity, OS/kernel, NTP, pending updates, Fail2Ban/unattended-upgrades |
 | S06 | SSH Hardening | root/password/KBI/public-key/forwarding policy |
 | S07 | Firewall & Listening Ports | cloud/UFW posture, default deny, public bind detection |

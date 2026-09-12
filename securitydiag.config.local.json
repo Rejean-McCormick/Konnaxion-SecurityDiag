@@ -6,10 +6,33 @@
     "allow_network": true,
     "allow_declared_audits": false
   },
+  "application": {
+    "django_check": {
+      "enabled": true,
+      "command": [
+        "C:\\mycode\\Konnaxion\\Konnaxion\\backend\\.venv\\Scripts\\python.exe",
+        "manage.py",
+        "check",
+        "--deploy",
+        "--settings=config.settings.production"
+      ],
+      "cwd": "backend",
+      "timeout_seconds": 180,
+      "environment": {
+        "DJANGO_SECRET_KEY": "securitydiag-check-only-7N4x-Q2vP-9kLm-3rTs-8wYz-6aBc-5dEf-1gHi",
+        "DJANGO_ALLOWED_HOSTS": "konnaxion.com",
+        "FRONTEND_BASE_URL": "https://konnaxion.com",
+        "DJANGO_ADMIN_URL": "admin/",
+        "SENTRY_DSN": "",
+        "DATABASE_URL": "postgres://securitydiag:securitydiag@127.0.0.1:5432/securitydiag",
+        "DJANGO_DEBUG": "False"
+      }
+    }
+  },
   "remote": {
     "enabled": true,
     "host": "2.56.97.41",
-    "user": "root",
+    "user": "kx-admin",
     "port": 22,
     "identity_file": "C:/Users/rejea/.ssh/id_ed25519",
     "strict_host_key_checking": "yes",
@@ -40,7 +63,13 @@
         "nginx:",
         "nginx@"
       ]
-    }
+    },
+    "allowed_sudo_users": [
+      "kx-admin"
+    ],
+    "allowed_ssh_key_fingerprints": [
+      "SHA256:1atsJGWjV8lYPXNsWNQBYXbDuKCEl95E02xPJjQk91g"
+    ]
   },
   "external": {
     "enabled": true,

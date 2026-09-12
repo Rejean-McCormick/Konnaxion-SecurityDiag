@@ -24,7 +24,7 @@ def parse(text):
 
 def run(cfg,report):
     try:
-        r=run_script(cfg,SCRIPT,timeout_seconds=60)
+        r=run_script(cfg,SCRIPT,privileged=True,timeout_seconds=60)
     except RemoteBlocked as e:
         report.add("ssh.effective_config","BLOCKED","ssh",str(e))
         return

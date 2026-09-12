@@ -50,3 +50,16 @@ SecurityDiag corroborates that evidence by checking the host independently:
 - Canonical service names do not authorize arbitrary images.
 - Blocking `UNKNOWN` is equivalent to no proof and blocks release.
 - An old compromised VPS is never promoted back to trusted baseline solely because current IOC scans are clean.
+
+## Common identity boundary
+
+SecurityDiag expects Konnaxion authentication to remain standalone-first:
+
+```text
+local django-allauth account
++ optional OpenID Connect federation
++ external identity keyed by issuer/provider + subject (sub)
++ local Konnaxion authorization
+```
+
+S04 also checks that email auto-linking is disabled, service/klone accounts are not interactive by default, the legacy DRF password-token endpoint is absent, production admin uses allauth, and the browser CSRF/same-origin contract is coherent.

@@ -7,8 +7,12 @@ set +e
 echo "__SS__"
 ss -H -lnt 2>/dev/null || netstat -lnt 2>/dev/null
 echo "__UFW__"
-if command -v ufw >/dev/null 2>&1; then
-  sudo -n ufw status verbose 2>&1 || ufw status verbose 2>&1
+UFW=""
+for x in /usr/sbin/ufw /sbin/ufw "$(command -v ufw 2>/dev/null)"; do
+  if [ -n "$x" ] && [ -x "$x" ]; then UFW="$x"; break; fi
+done
+if [ -n "$UFW" ]; then
+  "$UFW" status verbose 2>&1
 else
   echo "UFW_NOT_INSTALLED"
 fi
@@ -46,7 +50,7 @@ def extract_ports(text):
 
 def run(cfg,report):
     try:
-        r=run_script(cfg,SCRIPT,timeout_seconds=75)
+        r=run_script(cfg,SCRIPT,privileged=True,timeout_seconds=75)
     except RemoteBlocked as e:
         report.add("network.remote.listeners","BLOCKED","network",str(e))
         return

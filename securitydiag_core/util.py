@@ -80,6 +80,8 @@ def redact_data(value: Any, replacement="<REDACTED>", *, _key: Any = None):
     if _key is not None and _sensitive_config_key(_key):
         return replacement
     if isinstance(value, dict):
+        if str(_key).strip().lower().replace("-", "_") in {"environment", "env"}:
+            return {key: replacement for key in value}
         return {key: redact_data(item, replacement, _key=key) for key, item in value.items()}
     if isinstance(value, list):
         return [redact_data(item, replacement) for item in value]

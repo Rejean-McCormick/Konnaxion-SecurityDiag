@@ -1,11 +1,28 @@
 # SecurityDiag Pack Validation Report
 
 **Pack:** Konnaxion SecurityDiag  
-**Version:** 1.1.2  
+**Version:** 1.2.1  
 **Original validation date:** 2026-09-05  
 **Security hardening revision:** 2026-09-08 (S02 coverage refinement)
 
 
+
+
+## v1.2.1 local Django deploy-check environment (2026-09-11)
+
+S04 can now merge a validated `application.django_check.environment` mapping into the subprocess environment for `manage.py check --deploy`. The mapping is intended only for synthetic local check values; effective-config evidence redacts all environment values.
+
+Validation in the packaging workspace:
+
+```text
+compileall: PASS
+unit tests: 38 passed
+live Windows Konnaxion deploy-check: NOT_RUN_PACKAGING
+```
+
+## v1.2.0 common authentication alignment (2026-09-11)
+
+S04 now validates Konnaxion's standalone-first common-auth contract: optional django-allauth OIDC capability using `sub`, preserved local login, disabled email auto-linking, `/accounts/` ownership, removal of the legacy DRF password-token endpoint, human/service/klone interactive policy, production CSRF/admin-allauth settings, same-origin API convention, OIDC dependency declaration and legacy Auth0 cleanup.
 
 ## v1.1.2 Windows GUI launcher (2026-09-10)
 

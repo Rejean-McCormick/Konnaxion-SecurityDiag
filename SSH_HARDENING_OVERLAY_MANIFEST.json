@@ -1,0 +1,51 @@
+{
+  "schema": "securitydiag.ssh-hardening-overlay.v1",
+  "name": "SecurityDiag Safe SSH Hardening Assistant",
+  "version": "1.0.0",
+  "overlay_only": true,
+  "target_root": "C:\\mycode\\Konnaxion\\SecurityDiag",
+  "expected_fingerprint": "SHA256:1atsJGWjV8lYPXNsWNQBYXbDuKCEl95E02xPJjQk91g",
+  "validation": {
+    "compileall": "PASS",
+    "securitydiag_plus_overlay_unittest": "37/37 PASS",
+    "generated_remote_apply_script_bash_n": "PASS",
+    "live_vps_apply": "NOT_RUN_BY_PACKAGER"
+  },
+  "files": [
+    {
+      "path": "RUN_SSH_HARDENING_ASSISTANT.bat",
+      "sha256": "bde492e1cf008d95c7c2a9d1087c11e4c96611d0ce08fb4b60f0b3acf7f20ec6",
+      "bytes": 425
+    },
+    {
+      "path": "SSH_HARDENING_OVERLAY_README.txt",
+      "sha256": "d62bb9e2c432263982d2a8864782e15aca219284dc3b6b2c6aeeb2643843d979",
+      "bytes": 770
+    },
+    {
+      "path": "docs/SSH_HARDENING_ASSISTANT.md",
+      "sha256": "05746db79ef8effbf84b189b907f282716e5424f8f15100ce84cac035efacf58",
+      "bytes": 2395
+    },
+    {
+      "path": "templates/99-konnaxion-hardening.konnaxion.conf.example",
+      "sha256": "14de19df66cfe7a42de292362b6983a4bff90cc447c53e97992e9f736633004e",
+      "bytes": 380
+    },
+    {
+      "path": "tests/test_ssh_hardening_core.py",
+      "sha256": "7c87d7d2148190698a2c961ce01d408f4fecc1ad3d1e27a7f93497a41ccd87e5",
+      "bytes": 2870
+    },
+    {
+      "path": "tools/SSH_HARDENING_ASSISTANT.pyw",
+      "sha256": "36d3e2ff92971dc44c412ed1c298913feb68a2730a28c4a94a9aca24f9ea641d",
+      "bytes": 9082
+    },
+    {
+      "path": "tools/ssh_hardening_core.py",
+      "sha256": "c47d1f78a4d0ae73ff50a0db03feea3259510ec63aacde71575cf84c1d7e4774",
+      "bytes": 19002
+    }
+  ]
+}

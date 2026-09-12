@@ -75,3 +75,49 @@ S14 independently verifies that all required levels from the `release` campaign 
 Only paths, identities, hostnames, fingerprints and non-secret policy metadata belong in SecurityDiag config.
 
 As a defensive second layer, the persisted `.securitydiag/runs/<run-id>/effective_config.json` is recursively redacted before writing. This does not make secret-bearing SecurityDiag configuration supported; it only reduces accidental evidence leakage.
+
+## Common authentication surfaces
+
+`application` can override the Konnaxion common-auth source paths:
+
+```json
+{
+  "application": {
+    "django_base_settings": "backend/config/settings/base.py",
+    "django_production_settings": "backend/config/settings/production.py",
+    "django_urls": "backend/config/urls.py",
+    "django_user_model": "backend/konnaxion/users/models.py",
+    "django_user_adapters": "backend/konnaxion/users/adapters.py",
+    "backend_requirements": "backend/requirements/base.txt",
+    "frontend_production_env": "frontend/env.production.example",
+    "frontend_package": "frontend/package.json"
+  }
+}
+```
+
+S04 treats OIDC as optional federation. It requires the capability and identity-link policy to be correctly declared while preserving local django-allauth login and local Konnaxion authorization.
+
+### Local Django deploy-check environment
+
+`application.django_check.environment` may provide **synthetic, non-production** environment values needed only to load production settings during the local `manage.py check --deploy` diagnostic. Values are merged over the SecurityDiag process environment and are never written into finding evidence; persisted `effective_config.json` redacts the entire environment mapping.
+
+Do not place real production credentials or secret-store values in this configuration. A typical local-only shape is:
+
+```json
+{
+  "application": {
+    "django_check": {
+      "enabled": true,
+      "environment": {
+        "DJANGO_SECRET_KEY": "synthetic-check-only-value",
+        "DJANGO_ALLOWED_HOSTS": "konnaxion.com",
+        "FRONTEND_BASE_URL": "https://konnaxion.com",
+        "DJANGO_ADMIN_URL": "admin/",
+        "SENTRY_DSN": "",
+        "DATABASE_URL": "postgres://securitydiag:securitydiag@127.0.0.1:5432/securitydiag"
+      }
+    }
+  }
+}
+```
+

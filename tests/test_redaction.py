@@ -22,6 +22,22 @@ class RedactionTests(unittest.TestCase):
         self.assertEqual(out["application"]["DJANGO_SECRET_KEY"],"<REDACTED>")
         self.assertEqual(out["remote"]["password"],"<REDACTED>")
 
+    def test_structured_config_redacts_all_environment_values(self):
+        data={
+            "application":{
+                "django_check":{
+                    "environment":{
+                        "DJANGO_SECRET_KEY":"synthetic-secret",
+                        "FRONTEND_BASE_URL":"https://konnaxion.com",
+                    }
+                }
+            }
+        }
+        out=redact_data(data)
+        env=out["application"]["django_check"]["environment"]
+        self.assertEqual(env["DJANGO_SECRET_KEY"],"<REDACTED>")
+        self.assertEqual(env["FRONTEND_BASE_URL"],"<REDACTED>")
+
     def test_structured_config_preserves_non_secret_token_path_metadata(self):
         data={
             "capsule_manager":{"agent_token_path":"/opt/konnaxion/manager/agent.token"},

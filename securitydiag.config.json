@@ -106,9 +106,16 @@
         "--settings=config.settings.production"
       ],
       "cwd": "backend",
-      "timeout_seconds": 180
+      "timeout_seconds": 180,
+      "environment": {}
     },
-    "require_django_check_in_production": true
+    "require_django_check_in_production": true,
+    "django_urls": "backend/config/urls.py",
+    "django_user_model": "backend/konnaxion/users/models.py",
+    "django_user_adapters": "backend/konnaxion/users/adapters.py",
+    "backend_requirements": "backend/requirements/base.txt",
+    "frontend_production_env": "frontend/env.production.example",
+    "frontend_package": "frontend/package.json"
   },
   "remote": {
     "enabled": false,
