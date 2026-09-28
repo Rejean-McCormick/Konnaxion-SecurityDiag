@@ -1,0 +1,7 @@
+# SecurityDiag - SmartSnap ignore
+# Versionnable dans Git, mais inutile dans un snapshot de code courant.
+
+.smartignore
+
+# Manifeste d'un snapshot précédent; le nouveau snapshot produit son propre index.
+CODE_SNAPSHOT_MANIFEST.md

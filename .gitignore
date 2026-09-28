@@ -1,1 +1,51 @@
+# ==============================================================================
+# SecurityDiag .gitignore
+# ==============================================================================
+
+# --- Local snapshot / helper tooling ---
 GitSink.bat
+/SmartSnap.pyw
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.pytest-tmp/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# --- Local environment / secrets ---
+.env
+.env.*
+!.env.example
+!.env.*.example
+/securitydiag.config.local.json
+/securitydiag.config.local.json.bak*
+/attestations/*.local.json
+
+# --- SecurityDiag runtime evidence ---
+/.securitydiag/
+
+# --- Local overlay/recovery backups ---
+/.overlay_backups/
+
+# --- Temporary / backup files ---
+*.bak
+*.bak-*
+*.bak_*
+*.tmp
+*.temp
+*.log
+*~
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
