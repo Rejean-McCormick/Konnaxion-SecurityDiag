@@ -1,12 +1,21 @@
 # SecurityDiag Pack Validation Report
 
 **Pack:** Konnaxion SecurityDiag  
-**Version:** 1.2.1  
+**Version:** 1.3.0  
 **Original validation date:** 2026-09-05  
 **Security hardening revision:** 2026-09-08 (S02 coverage refinement)
 
 
 
+
+## v1.3.0 web trust hardening (2026-10-02)
+
+- `python -m compileall`: PASS
+- full SecurityDiag unit suite: **65 passed**
+- hardened Konnaxion S04 fixture: PASS
+- live static S04 run against patched Konnaxion snapshot: **S04 PASS**
+- S14 required-level WARN policy: fail-closed
+- correlated ClickFix/stored-active-content chain checks: enabled
 
 ## v1.2.1 local Django deploy-check environment (2026-09-11)
 

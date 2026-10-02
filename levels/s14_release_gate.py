@@ -5,7 +5,7 @@ from pathlib import Path
 from securitydiag_core.manifest import load_manifest
 from securitydiag_core.util import read_json
 
-RELEASE_ACCEPTABLE = {"PASS", "WARN"}
+RELEASE_ACCEPTABLE = {"PASS"}
 VALID_RELEASE_PROFILES = {"standard_release", "incident_recovery"}
 
 
@@ -232,11 +232,12 @@ def run(cfg, report):
             ),
         )
     elif release_profile == "incident_recovery":
+        blocking_attestations = missing_attestations or ["attestation-policy-disabled"]
         report.add(
             "release.incident_recovery.attestations",
-            "WARN",
+            "BLOCKED",
             "release_gate",
-            "Incident-recovery attestations are explicitly disabled for this run.",
+            "Incident-recovery attestations cannot be disabled for a release decision.",
             evidence={
                 "profile": release_profile,
                 "unrecorded": missing_attestations,
@@ -263,7 +264,7 @@ def run(cfg, report):
             "release.security_gate",
             "PASS",
             "release_gate",
-            "SecurityDiag + Capsule Manager release gate is satisfied. Warnings remain visible and must be dispositioned.",
+            "SecurityDiag + Capsule Manager release gate is satisfied with no unresolved required-level warnings.",
         )
     elif not gate_technical_ok:
         report.add(

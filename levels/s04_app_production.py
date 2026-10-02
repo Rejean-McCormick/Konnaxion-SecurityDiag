@@ -212,6 +212,174 @@ def _check_common_auth_contract(cfg, report, root: Path, app: dict) -> None:
     )
 
 
+
+def _has(text: str, *needles: str) -> bool:
+    return all(needle in text for needle in needles)
+
+
+def _check_web_trust_boundaries(cfg, report, root: Path, app: dict) -> None:
+    """Fail-closed static qualification of Konnaxion web trust boundaries.
+
+    These checks intentionally correlate low-privilege write surfaces with browser
+    navigation/upload sinks.  They are release controls, not a generic linter.
+    """
+    def read(rel: str) -> tuple[Path, str]:
+        return _read(root, rel)
+
+    prod_path, prod = read(app.get("django_production_settings", "backend/config/settings/production.py"))
+    base_path, base = read(app.get("django_base_settings", "backend/config/settings/base.py"))
+    adapters_path, adapters = read(app.get("django_user_adapters", "backend/konnaxion/users/adapters.py"))
+    controls_path, controls = read("backend/konnaxion/security_controls.py")
+    kon_api_path, kon_api = read("backend/konnaxion/konnected/api_views.py")
+    kon_ser_path, kon_ser = read("backend/konnaxion/konnected/serializers.py")
+    keen_api_path, keen_api = read("backend/konnaxion/keenkonnect/api_views.py")
+    keen_ser_path, keen_ser = read("backend/konnaxion/keenkonnect/serializers.py")
+    kreative_api_path, kreative_api = read("backend/konnaxion/kreative/api_views.py")
+    kreative_ser_path, kreative_ser = read("backend/konnaxion/kreative/serializers.py")
+    trust_ser_path, trust_ser = read("backend/konnaxion/trust/serializers.py")
+    websocket_path, websocket = read("backend/config/websocket.py")
+    nginx_path, nginx_media = read("backend/compose/production/nginx/default.conf")
+    middleware_path, middleware = read("frontend/middleware.ts")
+    navigation_path, navigation = read("frontend/lib/security/navigation.ts")
+
+    registration_closed = bool(re.search(
+        r'ACCOUNT_ALLOW_REGISTRATION\s*=\s*env\.bool\([^)]*default\s*=\s*False',
+        prod, re.I | re.S
+    )) and 'ACCOUNT_ALLOW_REGISTRATION", False' in adapters
+    report.add(
+        "app.web_trust.registration_fail_closed",
+        "PASS" if registration_closed else "FAIL",
+        "web_trust",
+        "Production self-registration fails closed." if registration_closed else
+        "Production self-registration is not proven fail-closed in settings and adapters.",
+        path=prod_path, release_blocker=not registration_closed,
+    )
+
+    throttled = "DEFAULT_THROTTLE_CLASSES" in base and "DEFAULT_THROTTLE_RATES" in base
+    report.add(
+        "app.web_trust.api_throttling", "PASS" if throttled else "FAIL", "web_trust",
+        "DRF anonymous/authenticated throttling is configured." if throttled else
+        "DRF has no default abuse-throttling policy.", path=base_path, release_blocker=not throttled,
+    )
+
+    resource_staff_write = (
+        re.search(r'class\s+KnowledgeResourceViewSet[\s\S]{0,900}permission_classes\s*=\s*\[StaffWritePublicReadPermission\]', kon_api)
+        is not None
+    )
+    resource_url_validated = "validate_safe_external_url" in kon_ser and "def validate_url" in kon_ser
+    report.add(
+        "app.web_trust.knowledge_resource_publication",
+        "PASS" if resource_staff_write and resource_url_validated else "FAIL",
+        "web_trust",
+        "Knowledge resources require reviewed staff publication and validated external HTTPS URLs."
+        if resource_staff_write and resource_url_validated else
+        "Knowledge resources still expose a low-privilege or unvalidated outbound-link publication path.",
+        evidence={"staff_write": resource_staff_write, "url_validation": resource_url_validated},
+        path=kon_api_path, release_blocker=not (resource_staff_write and resource_url_validated),
+    )
+
+    object_auth = all(token in keen_api for token in (
+        "OwnerOrStaffWritePermission", "ProjectManagerWritePermission", "SelfOrStaffWritePermission"
+    )) and all(token in kreative_api for token in ("OwnerOrStaffWritePermission", "StaffWritePublicReadPermission"))
+    report.add(
+        "app.web_trust.object_authorization", "PASS" if object_auth else "FAIL", "web_trust",
+        "Owner/project-manager/staff object authorization controls are wired into major writable APIs."
+        if object_auth else "Writable APIs are missing the expected owner/project-manager/staff authorization controls.",
+        evidence={"keenkonnect": str(keen_api_path), "kreative": str(kreative_api_path)},
+        release_blocker=not object_auth,
+    )
+
+    upload_validation = (
+        "validate_safe_upload" in controls
+        and "validate_safe_upload" in keen_ser
+        and "validate_safe_upload" in kreative_ser
+        and "validate_safe_upload" in trust_ser
+    )
+    media_sandbox = all(token in nginx_media.lower() for token in (
+        "x-content-type-options", "nosniff", "content-security-policy", "sandbox", "script-src 'none'"
+    )) and bool(re.search(r'html|svg|xml|js', nginx_media, re.I))
+    report.add(
+        "app.web_trust.upload_boundary",
+        "PASS" if upload_validation and media_sandbox else "FAIL", "web_trust",
+        "User uploads are allowlisted and production media responses block/sandbox active content."
+        if upload_validation and media_sandbox else
+        "User upload validation or active-content media containment is incomplete.",
+        evidence={"validator": upload_validation, "media_sandbox": media_sandbox},
+        path=nginx_path, release_blocker=not (upload_validation and media_sandbox),
+    )
+
+    dangerous_html = []
+    direct_open = []
+    frontend = root / "frontend"
+    if frontend.exists():
+        for path in frontend.rglob("*"):
+            if not path.is_file() or path.suffix.lower() not in {".ts", ".tsx", ".js", ".jsx"}:
+                continue
+            text = bounded_text(path, 2 * 1024 * 1024) or ""
+            rel = path.relative_to(root).as_posix()
+            if "dangerouslySetInnerHTML" in text:
+                dangerous_html.append(rel)
+            if "window.open(" in text and rel != "frontend/lib/security/navigation.ts":
+                direct_open.append(rel)
+    browser_safe = not dangerous_html and not direct_open and _has(navigation, "openExternalUrlSafely", "noopener,noreferrer")
+    report.add(
+        "app.web_trust.browser_sinks", "PASS" if browser_safe else "FAIL", "web_trust",
+        "Unreviewed raw-HTML and direct window.open sinks are absent; outbound navigation is centralized."
+        if browser_safe else "Dangerous HTML or direct browser-navigation sinks remain outside the reviewed helper.",
+        evidence={"dangerously_set_inner_html": dangerous_html, "direct_window_open": direct_open},
+        path=navigation_path, release_blocker=not browser_safe,
+    )
+
+    csp_ok = all(token in middleware for token in (
+        "Content-Security-Policy", "strict-dynamic", "script-src-attr 'none'", "object-src 'none'", "frame-ancestors 'none'"
+    )) and "nonce-" in middleware
+    report.add(
+        "app.web_trust.csp", "PASS" if csp_ok else "FAIL", "web_trust",
+        "Frontend enforces a nonce-based CSP with script/object/frame restrictions." if csp_ok else
+        "Frontend CSP is missing required nonce/script/object/frame restrictions.",
+        path=middleware_path, release_blocker=not csp_ok,
+    )
+
+    origin_ok = ("_websocket_origin_allowed" in websocket or "_origin_is_allowed" in websocket) and "4403" in websocket and ("b\"origin\"" in websocket or "Origin" in websocket)
+    report.add(
+        "app.web_trust.websocket_origin", "PASS" if origin_ok else "FAIL", "web_trust",
+        "WebSocket handshake validates Origin against allowed hosts." if origin_ok else
+        "WebSocket handshake does not prove an explicit fail-closed Origin policy.",
+        path=websocket_path, release_blocker=not origin_ok,
+    )
+
+    server_route_violations = []
+    api_root = root / "frontend" / "app" / "%5Fapi"
+    if api_root.exists():
+        for path in api_root.rglob("route.ts"):
+            text = bounded_text(path, 1024 * 1024) or ""
+            if "NEXT_PUBLIC_API_BASE" in text or "request.nextUrl.origin" in text:
+                server_route_violations.append(path.relative_to(root).as_posix())
+    fixed_internal = not server_route_violations
+    report.add(
+        "app.web_trust.internal_backend_origin", "PASS" if fixed_internal else "FAIL", "web_trust",
+        "Server-side API proxy routes use fixed server-only backend origins." if fixed_internal else
+        "Server-side API routes still derive credential-forwarding destinations from public/request origins.",
+        evidence=server_route_violations or None, release_blocker=not fixed_internal,
+    )
+
+    clickfix_chain = (not registration_closed) and (not resource_staff_write or not resource_url_validated) and (not browser_safe)
+    active_upload_chain = (not registration_closed) and (not upload_validation or not media_sandbox)
+    report.add(
+        "app.web_trust.clickfix_delivery_chain", "FAIL" if clickfix_chain else "PASS", "exploit_chain",
+        "A low-privilege ClickFix delivery chain is present." if clickfix_chain else
+        "The open-registration + untrusted-link + direct-browser-open ClickFix chain is broken.",
+        evidence={"open_registration": not registration_closed, "unsafe_resource_publication": not (resource_staff_write and resource_url_validated), "unsafe_browser_sink": not browser_safe},
+        release_blocker=clickfix_chain,
+    )
+    report.add(
+        "app.web_trust.stored_active_content_chain", "FAIL" if active_upload_chain else "PASS", "exploit_chain",
+        "Open registration combines with insufficient upload/media containment." if active_upload_chain else
+        "The open-registration + active-upload same-origin chain is broken.",
+        evidence={"open_registration": not registration_closed, "unsafe_upload_boundary": not (upload_validation and media_sandbox)},
+        release_blocker=active_upload_chain,
+    )
+
 def run(cfg,report):
     root=Path(cfg["_target_root"]); app=cfg.get("application",{})
     prod=root/app.get("django_production_settings","backend/config/settings/production.py")
@@ -228,12 +396,13 @@ def run(cfg,report):
                    "Session cookie is Secure.","SESSION_COOKIE_SECURE=True was not found.")
         check_text(report,prod,text,"app.django.csrf_cookie_secure",r'CSRF_COOKIE_SECURE\s*=\s*True',
                    "CSRF cookie is Secure.","CSRF_COOKIE_SECURE=True was not found.")
-        check_text(report,prod,text,"app.django.hsts",r'SECURE_HSTS_SECONDS\s*=\s*[1-9]\d*',
+        check_text(report,prod,text,"app.django.hsts",r'SECURE_HSTS_SECONDS\s*=\s*(?:[1-9]\d*|env\.int\([^)]*default\s*=\s*[1-9]\d*)',
                    "HSTS is enabled.","HSTS is not clearly enabled.",verdict_bad="WARN")
     else:
         report.add("app.django.production_settings","BLOCKED","application_security","Django production settings file was not found.",path=prod)
 
     _check_common_auth_contract(cfg, report, root, app)
+    _check_web_trust_boundaries(cfg, report, root, app)
 
     compose=root/app.get("production_compose","backend/docker-compose.production.yml")
     if compose.exists():

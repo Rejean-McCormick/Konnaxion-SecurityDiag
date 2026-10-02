@@ -1,0 +1,63 @@
+{
+  "schema": "konnaxion.security-overlay.v1",
+  "project": "secdiag",
+  "generated_at": "2026-10-02",
+  "changed_file_count": 11,
+  "files": [
+    {
+      "path": "CHANGES_20261002_WEB_TRUST_V130.md",
+      "sha256": "3f580ecade2c0644aff695fb118c6932dc43190a16ec77d295bb0c3e4947d8c3",
+      "bytes": 514
+    },
+    {
+      "path": "README.md",
+      "sha256": "d2e8a2d9ae294c13f99ecca4fd60aebc5c7e78a727ab0f8f1bc0433bffb7b6e1",
+      "bytes": 9362
+    },
+    {
+      "path": "SECURITYDIAG_PACK_MANIFEST.json",
+      "sha256": "bbab03bd42682da249d9272da37cbbacc480811ef9481ce769fcb1e5262a90e7",
+      "bytes": 15941
+    },
+    {
+      "path": "VALIDATION_REPORT.md",
+      "sha256": "24d8674c4c544fc067b2008ed54f96aa65f4416b304b5e9b719ee091ff4e9a79",
+      "bytes": 6233
+    },
+    {
+      "path": "levels/s04_app_production.py",
+      "sha256": "fb7517201bb96406e08b2235850e276cafb486044f4a75a12d63804eeb582873",
+      "bytes": 24513
+    },
+    {
+      "path": "levels/s14_release_gate.py",
+      "sha256": "bc71b385e81b06a2e5dfa15e58027f5e1c3f34a05662301a0fd418064d8c5144",
+      "bytes": 10101
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "eb5cc8fe8a30b671c45b3ac682f0dd8435f5e24992c5acaa4c31da320968035e",
+      "bytes": 243
+    },
+    {
+      "path": "securitydiag_core/__init__.py",
+      "sha256": "a8e23492fa9cb5ec123320e1c4527895a19f32aeabea9570b0d25ada5cd6c8d4",
+      "bytes": 111
+    },
+    {
+      "path": "securitydiag_manifest.json",
+      "sha256": "fba555ba382849f022449bb48af7dd9ef9fb94d8d6d205edb6e34c205d4b1aa9",
+      "bytes": 7862
+    },
+    {
+      "path": "tests/test_release_profiles.py",
+      "sha256": "9738f5eaa777e479734433cfef43eb3b7139f2b5e30d7bac24f66a7269218bad",
+      "bytes": 4947
+    },
+    {
+      "path": "tests/test_web_trust.py",
+      "sha256": "e20c9110039e00611d09528a417c34af16434b2fedfbeceb9bb603268d791948",
+      "bytes": 4533
+    }
+  ]
+}

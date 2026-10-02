@@ -1,6 +1,6 @@
 # Konnaxion SecurityDiag
 
-**Version:** 1.2.1  
+**Version:** 1.3.0  
 **Mode:** copy-in, read-only security qualification frame  
 **Runtime:** Python 3.10+ standard library only  
 **Primary target:** Konnaxion repository + fresh Linux production VPS  
@@ -290,3 +290,8 @@ SECURITY QUALIFIED FOR RELEASE
 #   K o n n a x i o n - S e c u r i t y D i a g 
  
  
+## v1.3 Web trust & authorization gate
+
+S04 is now a release-blocking web trust audit. It detects fail-open registration, low-privilege global writes, unsafe external-link publication, active-content uploads, unreviewed `dangerouslySetInnerHTML`/`window.open` sinks, weak CSP, missing API throttling, WebSocket Origin gaps, and credential-forwarding API proxies with mutable origins. It also correlates ClickFix-delivery and stored-active-content exploit chains.
+
+S14 no longer treats WARN as release-acceptable for required levels. Incident-recovery attestations cannot be disabled to obtain a PASS.

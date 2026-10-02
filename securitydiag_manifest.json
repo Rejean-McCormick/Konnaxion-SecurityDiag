@@ -1,9 +1,9 @@
 {
   "schema": "securitydiag.manifest.v1",
   "standard": "SecurityDiag",
-  "standard_version": "1.2.1",
+  "standard_version": "1.3.0",
   "suite_name": "Konnaxion SecurityDiag",
-  "suite_version": "1.2.1",
+  "suite_version": "1.3.0",
   "control_dir_default": ".securitydiag",
   "levels": [
     {
@@ -58,7 +58,7 @@
     },
     {
       "id": "S04",
-      "name": "Application Production Security",
+      "name": "Application Production Security & Web Trust",
       "module": "levels.s04_app_production",
       "category": "application_security",
       "order": 40,
@@ -67,7 +67,7 @@
         "S01"
       ],
       "timeout_seconds": 300,
-      "purpose": "Inspect Konnaxion production configuration, Django security controls, standalone-first allauth/OIDC identity policy and compose exposure."
+      "purpose": "Inspect production settings, authorization, uploads, outbound navigation, XSS/CSP, throttling, WebSocket origin policy and exploit-chain trust boundaries."
     },
     {
       "id": "S05",

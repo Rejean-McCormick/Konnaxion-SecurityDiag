@@ -97,16 +97,35 @@ class ReleaseProfileTests(unittest.TestCase):
         self.assertEqual(report.by_id("release.profile")["verdict"], "CONFIG_ERROR")
         self.assertEqual(report.by_id("release.security_gate")["verdict"], "FAIL")
 
-    def test_incident_attestations_can_be_explicitly_disabled(self):
+    def test_incident_attestations_cannot_be_disabled_to_obtain_release_pass(self):
         with tempfile.TemporaryDirectory() as td:
             cfg = self._cfg(td, "incident_recovery")
             cfg["release"]["require_attestations"] = False
             report = self._run(cfg)
         self.assertEqual(
             report.by_id("release.incident_recovery.attestations")["verdict"],
-            "WARN",
+            "BLOCKED",
         )
-        self.assertEqual(report.by_id("release.security_gate")["verdict"], "PASS")
+        self.assertEqual(report.by_id("release.security_gate")["verdict"], "BLOCKED")
+
+    def test_required_level_warn_blocks_release(self):
+        import json
+        with tempfile.TemporaryDirectory() as td:
+            run_root = Path(td)
+            result_path = run_root / "levels" / "S04" / "result.json"
+            result_path.parent.mkdir(parents=True)
+            result_path.write_text(json.dumps({
+                "level_id": "S04",
+                "level_name": "Application Production Security & Web Trust",
+                "verdict": "WARN",
+                "findings": [],
+            }), encoding="utf-8")
+            cfg = self._cfg(td)
+            report = FakeReport()
+            with patch.object(s14_release_gate, "_required_prior_level_ids", return_value=["S04"]):
+                s14_release_gate.run(cfg, report)
+        self.assertEqual(report.by_id("release.prior_levels.complete")["verdict"], "FAIL")
+        self.assertEqual(report.by_id("release.security_gate")["verdict"], "FAIL")
 
 
 if __name__ == "__main__":

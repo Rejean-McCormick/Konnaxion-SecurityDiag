@@ -1,8 +1,8 @@
 {
   "schema": "securitydiag.pack-manifest.v1.1",
   "name": "Konnaxion SecurityDiag",
-  "version": "1.2.1",
-  "generated_at": "2026-09-11",
+  "version": "1.3.0",
+  "generated_at": "2026-10-02",
   "levels": [
     "S00",
     "S01",
@@ -36,16 +36,17 @@
   },
   "validation": {
     "compileall": "PASS",
-    "targeted_unit_tests": "38 passed",
-    "common_auth_static_fixture": "PASS",
-    "django_check_environment_tests": "PASS",
+    "unit_tests": "65 passed",
+    "web_trust_static_fixture": "PASS",
+    "patched_konnaxion_s04": "PASS",
+    "s14_warn_fail_closed": "PASS",
     "full_live_campaign": "NOT_RUN_PACKAGING"
   },
   "files": [
     {
-      "path": "attestations/restore-drill.example.json",
-      "sha256": "e19eca82671fde6dce855a463105a6c08eac5d7a48a3cbfc0eb371a729255a72",
-      "bytes": 286
+      "path": ".gitignore",
+      "sha256": "3b7850c9137a918f1952be88be78a32e50d5ccef6efee7a8e592707adfeea05a",
+      "bytes": 837
     },
     {
       "path": "CHANGES_20260910_GUI_LAUNCHER_V112.md",
@@ -58,9 +59,74 @@
       "bytes": 588
     },
     {
-      "path": "CODE_SNAPSHOT_MANIFEST.md",
-      "sha256": "3c238e24e235423958f134e7a8485cd0cf2b9ed4d68c6eaae65b79231439ba57",
-      "bytes": 3473
+      "path": "CHANGES_20261002_WEB_TRUST_V130.md",
+      "sha256": "3f580ecade2c0644aff695fb118c6932dc43190a16ec77d295bb0c3e4947d8c3",
+      "bytes": 514
+    },
+    {
+      "path": "INSTALL_GITIGNORE.txt",
+      "sha256": "41b8145c8149de25af742e8326ab6804492342293344b16940bc079354a874f0",
+      "bytes": 278
+    },
+    {
+      "path": "README.md",
+      "sha256": "d2e8a2d9ae294c13f99ecca4fd60aebc5c7e78a727ab0f8f1bc0433bffb7b6e1",
+      "bytes": 9362
+    },
+    {
+      "path": "RUN_RECOVERY_DRILL_ASSISTANT.bat",
+      "sha256": "1590cf8a7069e1fc11b4440befb30eb03c9506fcf5de3970eb3f00ec635c05cd",
+      "bytes": 320
+    },
+    {
+      "path": "RUN_SECURITYDIAG.bat",
+      "sha256": "c39394fef652fce05fe32d5d82447efce3c3a292a7fd42d43063a8270c91ab00",
+      "bytes": 139
+    },
+    {
+      "path": "RUN_SECURITYDIAG.ps1",
+      "sha256": "d7a583cf4b1ae83c3a3b2121808fa7d69daf38a39659ea8099335ed75b69db4d",
+      "bytes": 210
+    },
+    {
+      "path": "RUN_SECURITYDIAG.sh",
+      "sha256": "bc31121e5e0ddb0b7c4320a45ce446a8960131354aaf43476372cf452d9452be",
+      "bytes": 151
+    },
+    {
+      "path": "RUN_SSH_HARDENING_ASSISTANT.bat",
+      "sha256": "bde492e1cf008d95c7c2a9d1087c11e4c96611d0ce08fb4b60f0b3acf7f20ec6",
+      "bytes": 425
+    },
+    {
+      "path": "RecoveryDrillAssistant.pyw",
+      "sha256": "89ff0c141e517b0cb7265a9db3ffb779f1515dd18fca69e4a3501018677cdf94",
+      "bytes": 8135
+    },
+    {
+      "path": "SSH_HARDENING_OVERLAY_MANIFEST.json",
+      "sha256": "0306f6949b3ea176463f187cdc2316fc078944e1ad4b1806650c3b7ac0a7a86d",
+      "bytes": 1695
+    },
+    {
+      "path": "SSH_HARDENING_OVERLAY_README.txt",
+      "sha256": "d62bb9e2c432263982d2a8864782e15aca219284dc3b6b2c6aeeb2643843d979",
+      "bytes": 770
+    },
+    {
+      "path": "SecurityDiagLauncher.pyw",
+      "sha256": "b273a872baf1f4f3c756ad4368f298437018f9215749c62d643a3c220fce4b07",
+      "bytes": 10608
+    },
+    {
+      "path": "VALIDATION_REPORT.md",
+      "sha256": "24d8674c4c544fc067b2008ed54f96aa65f4416b304b5e9b719ee091ff4e9a79",
+      "bytes": 6233
+    },
+    {
+      "path": "attestations/restore-drill.example.json",
+      "sha256": "e19eca82671fde6dce855a463105a6c08eac5d7a48a3cbfc0eb371a729255a72",
+      "bytes": 286
     },
     {
       "path": "docs/CONFIG_REFERENCE.md",
@@ -76,6 +142,21 @@
       "path": "docs/LEVEL_CONTRACT.md",
       "sha256": "23d20a4b852dc3f8d697c5bde9f6448667b7d3bccce6b0ee5ee8c7e7cf18c7cd",
       "bytes": 1268
+    },
+    {
+      "path": "docs/NONROOT_REMOTE_AUDIT_OVERLAY.md",
+      "sha256": "79c9c2c5f3ed803342c8ca94c6dafc53a5a9c8c3d312112ec0a47ab7e2a4291b",
+      "bytes": 1008
+    },
+    {
+      "path": "docs/RECOVERY_DRILL_ASSISTANT.md",
+      "sha256": "9f7e802dd293220a8ec1f094a04011aacb7d25630a876ef772481f35fca01de7",
+      "bytes": 3728
+    },
+    {
+      "path": "docs/RELEASE_PROFILES.md",
+      "sha256": "316fc191176f916653e4adb0008fe24f9af734debf171c8b3cffe521e79e15c2",
+      "bytes": 980
     },
     {
       "path": "docs/RELEASE_RUNBOOK.md",
@@ -108,14 +189,9 @@
       "bytes": 774
     },
     {
-      "path": "GitSink.bat",
-      "sha256": "15b0af32d211ff210de0ed87eb4b374cf41f9302d92baf82a464a518ffe2c97e",
-      "bytes": 781
-    },
-    {
-      "path": "INSTALL_GITIGNORE.txt",
-      "sha256": "41b8145c8149de25af742e8326ab6804492342293344b16940bc079354a874f0",
-      "bytes": 278
+      "path": "docs/SSH_HARDENING_ASSISTANT.md",
+      "sha256": "05746db79ef8effbf84b189b907f282716e5424f8f15100ce84cac035efacf58",
+      "bytes": 2395
     },
     {
       "path": "levels/__init__.py",
@@ -144,8 +220,8 @@
     },
     {
       "path": "levels/s04_app_production.py",
-      "sha256": "0d2fa021d1fe18dd7cf2095b3950d42de6d53a59726a355ade40fe1fe4f27e85",
-      "bytes": 14571
+      "sha256": "fb7517201bb96406e08b2235850e276cafb486044f4a75a12d63804eeb582873",
+      "bytes": 24513
     },
     {
       "path": "levels/s05_host_baseline.py",
@@ -154,13 +230,13 @@
     },
     {
       "path": "levels/s06_ssh.py",
-      "sha256": "6e5be8e6458563d7b74726da867ff102956931d0b411a0ae69c297df08998822",
-      "bytes": 3968
+      "sha256": "be10e73167974506431d6e48e81131a549129894fa3e50ccf4622118618ca370",
+      "bytes": 3984
     },
     {
       "path": "levels/s07_firewall_ports.py",
-      "sha256": "da3bdb448e5bcde4b4cbf53d7723240722950acd9353439dcf29a0754a417a25",
-      "bytes": 4286
+      "sha256": "38c561d2f1d8987b64586e87928dd5a0de6f8b0de964027966018f5e49e6e243",
+      "bytes": 4392
     },
     {
       "path": "levels/s08_docker.py",
@@ -174,8 +250,8 @@
     },
     {
       "path": "levels/s10_secret_permissions.py",
-      "sha256": "157011b56c8f5e3fc86cc017c05af49caf11fe7cf3e47d27fabef018fce18c99",
-      "bytes": 4692
+      "sha256": "8b3ac82fc75290980400a5d854e283ada649e0e98f65e9794469dfddd863c031",
+      "bytes": 6123
     },
     {
       "path": "levels/s11_persistence_ioc.py",
@@ -194,33 +270,13 @@
     },
     {
       "path": "levels/s14_release_gate.py",
-      "sha256": "3194951a126e586d24245e91cc5fb087616b080941846cfdb322d5dad1f87332",
-      "bytes": 7692
+      "sha256": "bc71b385e81b06a2e5dfa15e58027f5e1c3f34a05662301a0fd418064d8c5144",
+      "bytes": 10101
     },
     {
       "path": "pyproject.toml",
-      "sha256": "c3c0deb29828f74dfdfa6bbcd68148e20b6ffaec0175ad82476be0ec28c45e75",
+      "sha256": "eb5cc8fe8a30b671c45b3ac682f0dd8435f5e24992c5acaa4c31da320968035e",
       "bytes": 243
-    },
-    {
-      "path": "README.md",
-      "sha256": "8dde09a9793f8f2d0d4c480fc62861c831e5a5cfc4639c64401202c828c96b8c",
-      "bytes": 8760
-    },
-    {
-      "path": "RUN_SECURITYDIAG.bat",
-      "sha256": "c39394fef652fce05fe32d5d82447efce3c3a292a7fd42d43063a8270c91ab00",
-      "bytes": 139
-    },
-    {
-      "path": "RUN_SECURITYDIAG.ps1",
-      "sha256": "d7a583cf4b1ae83c3a3b2121808fa7d69daf38a39659ea8099335ed75b69db4d",
-      "bytes": 210
-    },
-    {
-      "path": "RUN_SECURITYDIAG.sh",
-      "sha256": "bc31121e5e0ddb0b7c4320a45ce446a8960131354aaf43476372cf452d9452be",
-      "bytes": 151
     },
     {
       "path": "schemas/campaign-summary.schema.json",
@@ -243,18 +299,13 @@
       "bytes": 1845
     },
     {
-      "path": "securitydiag.config.local.json",
-      "sha256": "56f871e98ba878c672240d950923f8108819c92c116248b91384d2c0eb56fee0",
-      "bytes": 2338
-    },
-    {
       "path": "securitydiag.py",
       "sha256": "fd518865587687b0ef14c79fffabf8d9aa203798466b26b4485eacc9b883a18d",
       "bytes": 310
     },
     {
       "path": "securitydiag_core/__init__.py",
-      "sha256": "e4693e931df28ef2f236d4d1f9edf66e45c8c8665745fbc2f8a0a2f4eafe5d04",
+      "sha256": "a8e23492fa9cb5ec123320e1c4527895a19f32aeabea9570b0d25ada5cd6c8d4",
       "bytes": 111
     },
     {
@@ -329,18 +380,28 @@
     },
     {
       "path": "securitydiag_manifest.json",
-      "sha256": "ebaa279e2adf58c0bd46b1ccfe0a2e0f935e54f0d28088eb486c44f44f77aed1",
-      "bytes": 7833
+      "sha256": "fba555ba382849f022449bb48af7dd9ef9fb94d8d6d205edb6e34c205d4b1aa9",
+      "bytes": 7862
     },
     {
-      "path": "SecurityDiagLauncher.pyw",
-      "sha256": "b273a872baf1f4f3c756ad4368f298437018f9215749c62d643a3c220fce4b07",
-      "bytes": 10608
+      "path": "securitydiag_recovery/__init__.py",
+      "sha256": "2466a21e1ac6087fa83b5bf019c3e583c8ceb218a40f4ed9db563fae2c789f3a",
+      "bytes": 168
+    },
+    {
+      "path": "securitydiag_recovery/core.py",
+      "sha256": "0e84d86948f38856896e0f329ee50e349197b570c76136ae57fb4af2163d8750",
+      "bytes": 30172
     },
     {
       "path": "templates/99-konnaxion-hardening.conf.example",
       "sha256": "100df7df7ba5695f0488aa60f1bd39116b81c9466ed7981abccf742206a08168",
       "bytes": 290
+    },
+    {
+      "path": "templates/99-konnaxion-hardening.konnaxion.conf.example",
+      "sha256": "14de19df66cfe7a42de292362b6983a4bff90cc447c53e97992e9f736633004e",
+      "bytes": 380
     },
     {
       "path": "templates/CLOUD_FIREWALL_BASELINE.md",
@@ -388,14 +449,29 @@
       "bytes": 615
     },
     {
+      "path": "tests/test_nonroot_remote_audits.py",
+      "sha256": "37129fb6dfc786ddecfa92899dbf65d5eef11d89cb03164cb737455dea685ed3",
+      "bytes": 4954
+    },
+    {
       "path": "tests/test_ports.py",
       "sha256": "1e92fb5a1a35ce38543e1bc9a849c8e92b2c09a0114e9a42fa1a432fa17bcf44",
       "bytes": 586
     },
     {
+      "path": "tests/test_recovery_assistant.py",
+      "sha256": "f84dcae6362071810457d79f79d88092c32ff872f20422c179ab48ef28ee8192",
+      "bytes": 11116
+    },
+    {
       "path": "tests/test_redaction.py",
       "sha256": "96eca9cc0e7e359baad311a299d661f11739fee1decd67a80b420c90bd4d65e6",
       "bytes": 1845
+    },
+    {
+      "path": "tests/test_release_profiles.py",
+      "sha256": "9738f5eaa777e479734433cfef43eb3b7139f2b5e30d7bac24f66a7269218bad",
+      "bytes": 4947
     },
     {
       "path": "tests/test_remote.py",
@@ -408,14 +484,29 @@
       "bytes": 1346
     },
     {
+      "path": "tests/test_ssh_hardening_core.py",
+      "sha256": "7c87d7d2148190698a2c961ce01d408f4fecc1ad3d1e27a7f93497a41ccd87e5",
+      "bytes": 2870
+    },
+    {
       "path": "tests/test_verdicts.py",
       "sha256": "d847cc14032b68362ca334bd45fc2a6e448d8a3400f01c12d798b585f46faf88",
       "bytes": 925
     },
     {
-      "path": "VALIDATION_REPORT.md",
-      "sha256": "0870a32e82a019d902091b9dbcb4910d1fa355c40ed0e9ab518c472c01c22a90",
-      "bytes": 5889
+      "path": "tests/test_web_trust.py",
+      "sha256": "e20c9110039e00611d09528a417c34af16434b2fedfbeceb9bb603268d791948",
+      "bytes": 4533
+    },
+    {
+      "path": "tools/SSH_HARDENING_ASSISTANT.pyw",
+      "sha256": "36d3e2ff92971dc44c412ed1c298913feb68a2730a28c4a94a9aca24f9ea641d",
+      "bytes": 9082
+    },
+    {
+      "path": "tools/ssh_hardening_core.py",
+      "sha256": "c47d1f78a4d0ae73ff50a0db03feea3259510ec63aacde71575cf84c1d7e4774",
+      "bytes": 19002
     }
   ]
 }
